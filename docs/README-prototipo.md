@@ -1,4 +1,4 @@
-# Céspedes Living Hospedagens — protótipo navegável
+# Cespedes Living Hospedagens — protótipo navegável
 
 Protótipo visual de um site de hospedagens e gestão de flats em João Pessoa (PB), criado com base na identidade apresentada pelo cliente: azul-marinho, dourado, off-white, tipografia editorial e fotografia de arquitetura.
 

@@ -117,7 +117,7 @@ export default async function Home() {
             </div>
           </div>
           <div>
-            <p className="eyebrow gold-text">O JEITO CÉSPEDES DE RECEBER</p>
+            <p className="eyebrow gold-text">O JEITO CESPEDES DE RECEBER</p>
             <h2>
               Conforto, cuidado
               <br />e tranquilidade.

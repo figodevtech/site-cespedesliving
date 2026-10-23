@@ -8,7 +8,7 @@ export function LeadForm({ contact = false }: { contact?: boolean }) {
   const [error, setError] = useState("");
   const [prepared, setPrepared] =
     useState<ReturnType<typeof contactLink>>(null);
-  const channel = contactLink("Olá! Gostaria de falar com a Céspedes Living.");
+  const channel = contactLink("Olá! Gostaria de falar com a Cespedes Living.");
   return (
     <form
       className="lead-form stack-form"
@@ -23,7 +23,7 @@ export function LeadForm({ contact = false }: { contact?: boolean }) {
           if (fd.get("website"))
             throw new Error("Não foi possível preparar a mensagem.");
           const link = contactLink(
-            `${contact ? "Contato" : "Interesse em gestão de imóvel"} — Céspedes Living\nNome: ${fd.get("name")}\nE-mail: ${fd.get("email")}\nTelefone: ${fd.get("phone")}\n${contact ? "" : `Região: ${fd.get("neighborhood")}\n`}Mensagem: ${fd.get("message") ?? ""}`,
+            `${contact ? "Contato" : "Interesse em gestão de imóvel"} — Cespedes Living\nNome: ${fd.get("name")}\nE-mail: ${fd.get("email")}\nTelefone: ${fd.get("phone")}\n${contact ? "" : `Região: ${fd.get("neighborhood")}\n`}Mensagem: ${fd.get("message") ?? ""}`,
           );
           if (!link)
             throw new Error(

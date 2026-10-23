@@ -55,14 +55,14 @@ export default async function ContentRoute({
                 <span className="image-label">Imagem ilustrativa</span>
               </div>
               <div>
-                <p className="eyebrow gold-text">O JEITO CÉSPEDES DE RECEBER</p>
+                <p className="eyebrow gold-text">O JEITO CESPEDES DE RECEBER</p>
                 <h2>
                   Estar bem.
                   <br />
                   Sentir-se em casa.
                 </h2>
                 <p className="section-lead">
-                  A Céspedes Living Hospedagens nasce da proposta de unir
+                  A Cespedes Living Hospedagens nasce da proposta de unir
                   conforto para quem viaja e tranquilidade para quem confia a
                   gestão de seu flat.
                 </p>
@@ -208,7 +208,7 @@ export default async function ContentRoute({
               <a
                 className="button"
                 href={
-                  contactLink("Olá! Gostaria de falar com a Céspedes Living.")
+                  contactLink("Olá! Gostaria de falar com a Cespedes Living.")
                     ?.href
                 }
               >
@@ -277,7 +277,7 @@ export default async function ContentRoute({
               <>
                 <h2>1. Informações do site</h2>
                 <p>
-                  O site apresenta a Céspedes Living Hospedagens e sua proposta
+                  O site apresenta a Cespedes Living Hospedagens e sua proposta
                   de hospedagem e gestão de imóveis. Confirme as
                   características, tarifas e disponibilidade da acomodação com o
                   atendimento.
@@ -304,7 +304,7 @@ export default async function ContentRoute({
               </>
             )}
             <p>
-              Céspedes Living Hospedagens ·{" "}
+              Cespedes Living Hospedagens ·{" "}
               <Link href="/contato">Informações de contato</Link>
             </p>
           </article>

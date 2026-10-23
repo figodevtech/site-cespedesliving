@@ -40,7 +40,7 @@ export const contentPages = {
       "Uma proposta de cuidado com o imóvel, com quem se hospeda e com quem confia seu patrimônio.",
   },
   sobre: {
-    eyebrow: "Sobre a Céspedes Living",
+    eyebrow: "Sobre a Cespedes Living",
     title: "A arte de receber. O cuidado de gerir.",
     description:
       "Uma proposta de hospitalidade e administração de flats em João Pessoa, com atenção às pessoas e aos detalhes.",

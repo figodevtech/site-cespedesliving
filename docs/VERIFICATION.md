@@ -1,5 +1,13 @@
 # Verificação — apresentação pública
 
+## Grafia Cespedes sem acento — 23/10/2026
+
+Nome corrigido nos textos públicos, títulos e descrições das páginas, nomes acessíveis das logos e mensagens de contato. A busca textual não encontrou a grafia acentuada no código da aplicação nem no protótipo. Os registros históricos de geração e nomes dos arquivos originais foram preservados como referência.
+
+Logos horizontal e vertical editadas com image_gen e aplicadas ao cabeçalho e rodapé. Conferência visual em 320 e 1440px; checagem de carregamento e ausência de overflow em 320, 390, 768, 1024 e 1440px. Monograma e favicons permanecem válidos, sem palavra a corrigir.
+
+Build, lint e TypeScript aprovados. Sete testes existentes passaram no build de produção em 20,4s: navegação/imagens em três viewports, formulários de contato/parceria e acessibilidade em desktop/celular. Capturas atualizadas em `brand-assets/` e `screenshots/`.
+
 ## Campos de data no celular — 23/10/2026
 
 Consulta de hospedagem, busca e reserva usam o mesmo controle de data nativo, com texto de 16px, altura mínima de 48px e largura limitada ao contêiner. Entrada e saída ficam empilhadas nas telas pequenas. A busca da home acompanha a altura do conteúdo para evitar sobreposição.

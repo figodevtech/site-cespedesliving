@@ -9,7 +9,7 @@ import { InquiryForm } from "@/components/inquiry-form";
 export const metadata: Metadata = {
   title: "Solicitar estadia",
   description:
-    "Escolha seu período e consulte a disponibilidade de hospedagem com a Céspedes Living.",
+    "Escolha seu período e consulte a disponibilidade de hospedagem com a Cespedes Living.",
 };
 export default async function BookingPage({
   params,

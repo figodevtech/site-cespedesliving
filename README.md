@@ -1,4 +1,4 @@
-# Céspedes Living Hospedagens
+# Cespedes Living Hospedagens
 
 Site em Next.js App Router, React, TypeScript estrito e Tailwind CSS. A interface pública usa a identidade navy/dourada e não exibe rótulos de demonstração.
 

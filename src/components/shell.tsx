@@ -138,7 +138,7 @@ export function Footer() {
             </Link>
             <a
               href={
-                contactLink("Olá! Gostaria de falar com a Céspedes Living.")
+                contactLink("Olá! Gostaria de falar com a Cespedes Living.")
                   ?.href
               }
             >
@@ -147,7 +147,7 @@ export function Footer() {
           </div>
         </div>
         <div className="footer-bottom">
-          <span>© {new Date().getFullYear()} Céspedes Living Hospedagens</span>
+          <span>© {new Date().getFullYear()} Cespedes Living Hospedagens</span>
           <span>Imagens de ambientação geradas por IA.</span>
         </div>
       </div>

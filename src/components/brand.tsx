@@ -13,11 +13,11 @@ export function Brand({
     <Link
       href="/"
       className={`brand brand-${variant}`}
-      aria-label="Céspedes Living Hospedagens — início"
+      aria-label="Cespedes Living Hospedagens — início"
     >
       <Image
         src={asset.src}
-        alt="Céspedes Living Hospedagens"
+        alt="Cespedes Living Hospedagens"
         width={asset.width}
         height={asset.height}
         className="brand-image"

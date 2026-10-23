@@ -1,8 +1,8 @@
-# Prompt de implementação para Codex — Céspedes Living Hospedagens
+# Prompt de implementação para Codex — Cespedes Living Hospedagens
 
 ## Contexto
 
-Você é um engenheiro front-end sênior com atenção excepcional a UI/UX e performance. Vamos construir o site profissional e público da **Céspedes Living Hospedagens**, empresa de administração de flats próprios de terceiros em João Pessoa, Paraíba. A empresa administra flats de diversos proprietários, recebe reservas e acompanha os resultados dos imóveis por meio de um ERP.
+Você é um engenheiro front-end sênior com atenção excepcional a UI/UX e performance. Vamos construir o site profissional e público da **Cespedes Living Hospedagens**, empresa de administração de flats próprios de terceiros em João Pessoa, Paraíba. A empresa administra flats de diversos proprietários, recebe reservas e acompanha os resultados dos imóveis por meio de um ERP.
 
 **Este repositório contém um protótipo navegável em HTML/CSS/JS, com assets ilustrativos. Inspecione `index.html`, `styles.css`, `app.js` e `assets/` e preserve os conceitos visuais e fluxos ao migrar.** A imagem original de marca e a apresentação visual são referências aprovadas para o estilo; a logomarca vetorial oficial deve ser solicitada à equipe, e NÃO substituída por uma marca inventada.
 

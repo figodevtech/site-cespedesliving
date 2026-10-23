@@ -1,4 +1,4 @@
-# Céspedes Living Hospedagens
+# Cespedes Living Hospedagens
 
 Front-end de demonstração em **Next.js 16.4.3, React 19.3.1, TypeScript estrito e Tailwind CSS 4**. Implementa a fase 1 do `CODEX_BRIEF.md`, com seis flats fictícios, navegação real e identidade navy/dourada.
 

@@ -1,1 +1,8 @@
-{"key":"logo-stacked","reference":"public/logos/Logotipo Luxuoso CÉSPEDES LIVING.png","path":"C:\\Users\\luc14\\.codex\\generated_images\\01a1693c-3e9e-7590-b5a6-dff85c6054f1\\exec-128abc23-28e9-4142-b8ff-38b0cf555e5d.png","prompt":"Use case: background-extraction / identity-preserve. Remove only the dark navy background and its texture from the supplied Céspedes Living Hospedagens logo, creating a clean genuinely transparent alpha cutout. Preserve the EXACT CL monogram, its proportions and interlocking geometry, all letterforms, spacing, spelling and accents, and the centered stacked arrangement. Exact words CÉSPEDES, LIVING, HOSPEDAGENS. Preserve the warm gold on monogram and LIVING and ivory-white on CÉSPEDES and HOSPEDAGENS. No new styling, no glow outside the artwork, no background rectangle or shadows behind the canvas. Crisp clean edges, source artwork faithfully preserved. Trim unused outer margins.","tool":"image_gen"}
+{
+  "key": "logo-stacked",
+  "reference": "docs/brand-assets/history/logo-stacked-original.json",
+  "path": "docs/brand-assets/sources/logo-stacked.png",
+  "prompt": "Use case: text-localization. Edit target: the supplied centered stacked transparent Cespedes Living Hospedagens logo. Make ONE spelling correction: remove the acute accent above the first E of CÉSPEDES so the word reads exactly CESPEDES (C E S P E D E S), all uppercase ASCII, no accent, no diacritics. Keep the existing letters and their positions, serif font, spacing, ivory and metallic gold colors, interlocking CL monogram at top, LIVING, HOSPEDAGENS, line ornaments, proportions and centered stacked layout unchanged. Retain true transparent background and clean sharp edges. Do not redesign the logo. Remove only the small accent stroke above the E, preserving the E itself.",
+  "tool": "image_gen",
+  "generatedPath": "C:/Users/luc14/.codex/generated_images/01a1693c-3e9e-7590-b5a6-dff85c6054f1/exec-b19f49bc-91a1-4dbe-9df7-1d260d8fa05e.png"
+}

@@ -110,7 +110,7 @@ export function OwnerDashboardView({ data }: { data: OwnerDashboard }) {
             className="button button-outline button-block"
             onClick={() => {
               const csv =
-                "\uFEFFRelatório FICTÍCIO — Céspedes Living\nIndicador;Valor BRL\nReceitas;" +
+                "\uFEFFRelatório FICTÍCIO — Cespedes Living\nIndicador;Valor BRL\nReceitas;" +
                 revenue +
                 "\nDespesas;" +
                 expenses +

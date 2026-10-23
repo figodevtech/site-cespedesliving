@@ -12,7 +12,7 @@ export function contactLink(
     };
   if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
     return {
-      href: `mailto:${email}?subject=${encodeURIComponent("Contato — Céspedes Living")}&body=${encodeURIComponent(message)}`,
+      href: `mailto:${email}?subject=${encodeURIComponent("Contato — Cespedes Living")}&body=${encodeURIComponent(message)}`,
       label: "Continuar por e-mail",
     };
   return null;

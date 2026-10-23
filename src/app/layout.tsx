@@ -15,8 +15,8 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   ),
   title: {
-    default: "Céspedes Living | Hospedagens em João Pessoa",
-    template: "%s | Céspedes Living",
+    default: "Cespedes Living | Hospedagens em João Pessoa",
+    template: "%s | Cespedes Living",
   },
   description:
     "Flats selecionados e gestão de hospedagens em João Pessoa. Conforto para quem chega, cuidado para quem confia.",
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   openGraph: {
     locale: "pt_BR",
     type: "website",
-    siteName: "Céspedes Living",
+    siteName: "Cespedes Living",
     images: [
       {
         url: "/images/hero.webp",

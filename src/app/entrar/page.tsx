@@ -3,7 +3,7 @@ import { AccessState } from "@/components/access-state";
 import { PageHero } from "@/components/ui";
 export const metadata: Metadata = {
   title: "Entrar",
-  description: "Acesse sua conta na Céspedes Living.",
+  description: "Acesse sua conta na Cespedes Living.",
 };
 export default function Page() {
   return (

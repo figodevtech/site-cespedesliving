@@ -10,7 +10,7 @@ import { LeadForm } from "@/components/lead-form";
 export const metadata: Metadata = {
   title: "Para proprietários",
   description:
-    "Conheça a proposta de gestão de flats da Céspedes Living: operação, atendimento e acompanhamento de resultados.",
+    "Conheça a proposta de gestão de flats da Cespedes Living: operação, atendimento e acompanhamento de resultados.",
 };
 export default function Page() {
   return (
@@ -137,7 +137,7 @@ export default function Page() {
               para seu flat.
             </h2>
             <p className="section-lead">
-              Uma conversa é o primeiro passo para conhecer a gestão Céspedes
+              Uma conversa é o primeiro passo para conhecer a gestão Cespedes
               Living e entender o que faz sentido para o seu imóvel.
             </p>
             <Notice>

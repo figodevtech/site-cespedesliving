@@ -1,5 +1,12 @@
 # Changelog — fase 1
 
+## 23/10/2026 — grafia Cespedes sem acento
+
+- Nome corrigido para Cespedes nos textos, metadados, descrições acessíveis, documentos e mensagens preparadas para contato.
+- Logos horizontal e vertical editadas com image_gen para exibir CESPEDES sem acento, mantendo o monograma CL e as composições existentes.
+- Fontes corrigidas preservadas em `docs/brand-assets/sources/`, com prompts e registros da geração; PNGs originais fornecidos pela equipe preservados.
+- Capturas atualizadas de cabeçalho, rodapé e páginas. Build, lint, TypeScript e sete testes de regressão aprovados.
+
 ## 23/10/2026 — datas no celular
 
 - Campos de entrada e saída padronizados na consulta, na busca e no formulário de reserva, mantendo o calendário nativo.
