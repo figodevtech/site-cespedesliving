@@ -1,0 +1,14 @@
+{
+  "logo-horizontal": {
+    "src": "/logos/optimized/logo-horizontal.webp",
+    "width": 960,
+    "height": 242,
+    "bytes": 91224
+  },
+  "logo-stacked": {
+    "src": "/logos/optimized/logo-stacked.webp",
+    "width": 768,
+    "height": 506,
+    "bytes": 116096
+  }
+}

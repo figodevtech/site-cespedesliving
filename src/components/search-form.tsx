@@ -1,0 +1,171 @@
+"use client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Search } from "lucide-react";
+import { addDays, today, validateStay } from "@/domain/dates";
+export const neighborhoods = [
+  "Tambaú",
+  "Manaíra",
+  "Cabo Branco",
+  "Bessa",
+  "Intermares",
+  "Altiplano",
+];
+export function SearchForm({
+  compact = false,
+  initial = {},
+  showPrices = false,
+}: {
+  compact?: boolean;
+  initial?: Record<string, string>;
+  showPrices?: boolean;
+}) {
+  const router = useRouter();
+  const [error, setError] = useState("");
+  return (
+    <form
+      className={compact ? "catalog-filter" : "search-shell"}
+      aria-label="Buscar hospedagem"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        const params = new URLSearchParams();
+        fd.forEach((value, key) => {
+          if (String(value)) params.set(key, String(value));
+        });
+        try {
+          const checkin = String(fd.get("checkin") ?? "");
+          const checkout = String(fd.get("checkout") ?? "");
+          if (checkin || checkout)
+            validateStay(checkin, checkout, Number(fd.get("guests")), 4);
+          setError("");
+          router.push(`/flats?${params}`);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Confira as datas.");
+        }
+      }}
+    >
+      <div className={compact ? "field" : "search-field"}>
+        <label htmlFor="search-neighborhood">Destino</label>
+        <select
+          id="search-neighborhood"
+          name="neighborhood"
+          defaultValue={initial.neighborhood ?? ""}
+        >
+          <option value="">João Pessoa e região</option>
+          {neighborhoods.map((n) => (
+            <option key={n}>{n}</option>
+          ))}
+        </select>
+      </div>
+      <div className={compact ? "field" : "search-field"}>
+        <label htmlFor="search-checkin">Entrada</label>
+        <input
+          type="date"
+          id="search-checkin"
+          name="checkin"
+          min={today()}
+          defaultValue={initial.checkin ?? (compact ? "" : addDays(today(), 3))}
+        />
+      </div>
+      <div className={compact ? "field" : "search-field"}>
+        <label htmlFor="search-checkout">Saída</label>
+        <input
+          type="date"
+          id="search-checkout"
+          name="checkout"
+          min={addDays(today(), 1)}
+          defaultValue={
+            initial.checkout ?? (compact ? "" : addDays(today(), 6))
+          }
+        />
+      </div>
+      <div className={compact ? "field" : "search-field"}>
+        <label htmlFor="search-guests">Hóspedes</label>
+        <select
+          id="search-guests"
+          name="guests"
+          defaultValue={initial.guests ?? "2"}
+        >
+          {[1, 2, 3, 4].map((n) => (
+            <option value={n} key={n}>
+              {n} hóspede{n > 1 ? "s" : ""}
+            </option>
+          ))}
+        </select>
+      </div>
+      {compact && (
+        <>
+          {showPrices && (
+            <>
+              <div className="field">
+                <label htmlFor="min-price">Diária mínima (R$)</label>
+                <input
+                  id="min-price"
+                  type="number"
+                  name="minPrice"
+                  min="0"
+                  step="1"
+                  defaultValue={initial.minPrice ?? ""}
+                  placeholder="Sem mínimo"
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="max-price">Diária máxima (R$)</label>
+                <input
+                  id="max-price"
+                  type="number"
+                  name="maxPrice"
+                  min="0"
+                  step="1"
+                  defaultValue={initial.maxPrice ?? ""}
+                  placeholder="Sem máximo"
+                />
+              </div>
+            </>
+          )}
+          <div className="field">
+            <label htmlFor="amenity">Facilidade</label>
+            <select
+              id="amenity"
+              name="amenity"
+              defaultValue={initial.amenity ?? ""}
+            >
+              <option value="">Todas as facilidades</option>
+              {[
+                "Estacionamento",
+                "Piscina compartilhada",
+                "Espaço de trabalho",
+                "Varanda",
+              ].map((a) => (
+                <option key={a}>{a}</option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="sort">Ordenar por</label>
+            <select id="sort" name="sort" defaultValue={initial.sort ?? ""}>
+              <option value="">Relevância</option>
+              {showPrices && (
+                <>
+                  <option value="price-asc">Menor preço</option>
+                  <option value="price-desc">Maior preço</option>
+                </>
+              )}
+              <option value="guests">Mais hóspedes</option>
+            </select>
+          </div>
+        </>
+      )}
+      <button className="button" type="submit">
+        <Search size={17} />
+        Buscar flats
+      </button>
+      {error && (
+        <p className="form-error search-error" role="alert">
+          {error}
+        </p>
+      )}
+    </form>
+  );
+}
