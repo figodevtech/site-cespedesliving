@@ -1,5 +1,13 @@
 # Verificação — apresentação pública
 
+## Campos de data no celular — 23/10/2026
+
+Consulta de hospedagem, busca e reserva usam o mesmo controle de data nativo, com texto de 16px, altura mínima de 48px e largura limitada ao contêiner. Entrada e saída ficam empilhadas nas telas pequenas. A busca da home acompanha a altura do conteúdo para evitar sobreposição.
+
+Lint, TypeScript e build aprovados. Quatro testes específicos passaram em Chromium e WebKit nas larguras de 320, 390 e 430px: valores preenchidos/vazios, dimensões, ausência de overflow, busca e conteúdo da consulta pelo WhatsApp. Nove testes existentes também passaram: navegação e imagens em desktop/tablet/celular, busca, filtros e acessibilidade em desktop/celular. Capturas e instruções em [`date-fields/README.md`](date-fields/README.md).
+
+WebKit foi executado no Windows com viewport móvel; não houve teste em iPhone físico nem validação do seletor de calendário do sistema iOS.
+
 ## Atualização da marca fornecida — 23/10/2026
 
 Marca horizontal no cabeçalho, completa no rodapé e monograma nos favicons. Build, lint e TypeScript aprovados; as cinco verificações existentes de rotas/imagens, responsividade e acessibilidade passaram em 19,2s no build de produção. Ícones HTTP 200 e dimensões verificadas. Cabeçalho conferido de 320px a 1440px. Registro e capturas em `docs/brand-assets/`.
@@ -36,6 +44,6 @@ Capturas atualizadas de desktop, tablet e celular estão em `docs/screenshots/`.
 
 O ERP e a autenticação segura ainda não estão integrados. A consulta acontece pelo atendimento; preencher o formulário não confirma hospedagem. As imagens continuam identificadas como ambientação gerada por IA. O inventário e os documentos jurídicos precisam ser validados pela equipe antes da publicação definitiva.
 
-A validação de navegador foi feita em Chromium; Firefox, Safari e leitores de tela não foram executados. Não foi realizado envio de mensagens pelo WhatsApp nem implantação pública.
+A validação completa das rotas foi feita em Chromium; os campos de data também foram verificados em WebKit. Firefox, Safari em dispositivo Apple e leitores de tela não foram executados. Não foi realizado envio de mensagens pelo WhatsApp nem implantação pública.
 
 O relatório da fase anterior foi preservado em `VERIFICATION-fase1.md`.

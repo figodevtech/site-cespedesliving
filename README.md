@@ -32,6 +32,8 @@ npm run test:e2e
 
 Se já houver um servidor de desenvolvimento em 3000, defina `PLAYWRIGHT_PORT=3001` para testar o build de produção em uma porta separada. No PowerShell: `$env:PLAYWRIGHT_PORT = '3001'` antes de executar o comando de testes.
 
+Para verificar especificamente os campos de data em Chromium e WebKit, instale também `npx playwright install webkit` e execute `npm run test:dates`. A cobertura e as capturas estão em [`docs/date-fields/`](docs/date-fields/).
+
 ## Atendimento e consultas
 
 **WhatsApp oficial: +55 (83) 99912-3337**, configurado em `src/lib/contact.ts`. Pode ser substituído por `NEXT_PUBLIC_CONTACT_WHATSAPP`, com código do país e apenas dígitos. `.env.example` registra a configuração. `NEXT_PUBLIC_CONTACT_EMAIL` permite configurar um canal alternativo.

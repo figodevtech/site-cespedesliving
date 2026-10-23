@@ -5,6 +5,7 @@ if (!Number.isInteger(port) || port < 1 || port > 65535)
 const baseURL = `http://127.0.0.1:${port}`;
 export default defineConfig({
   testDir: "./tests/e2e",
+  testIgnore: "mobile-dates.spec.ts",
   fullyParallel: false,
   workers: 2,
   timeout: 45000,

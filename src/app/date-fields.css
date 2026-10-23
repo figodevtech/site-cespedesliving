@@ -1,0 +1,93 @@
+/* Shared native date controls for search, inquiries and the booking form. */
+.date-control {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid #d9dfde;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  color-scheme: light;
+}
+.date-control > input[type="date"] {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-inline-size: 0;
+  max-width: 100%;
+  height: 46px;
+  min-height: 46px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-family: var(--body);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: normal;
+  text-align: start;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.date-control:focus-within {
+  border-color: var(--gold-dark);
+  outline: 2px solid #a87a28;
+  outline-offset: 2px;
+}
+.date-control > input[type="date"]:focus {
+  outline: none;
+  box-shadow: none;
+}
+.date-input::-webkit-datetime-edit {
+  padding: 0;
+}
+.date-input::-webkit-date-and-time-value {
+  min-height: 1.5em;
+  text-align: start;
+}
+.date-input::-webkit-calendar-picker-indicator {
+  margin: 0 0 0 8px;
+  cursor: pointer;
+}
+.date-field {
+  min-width: 0;
+}
+.booking-widget .stay-dates {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+}
+.search-shell .date-control {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+@media (max-width: 700px) {
+  /* Native calendars need enough room for the full date and their picker button. */
+  .booking-widget .stay-dates {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hero {
+    display: block;
+    min-height: 0;
+  }
+  .hero-copy {
+    padding-bottom: 40px;
+  }
+  .hero-bottom {
+    position: relative;
+  }
+}
+@media (max-width: 480px) {
+  .search-shell .date-field,
+  .catalog-filter .date-field {
+    grid-column: 1/-1;
+  }
+  .search-field.date-field {
+    border-right: 0;
+  }
+}

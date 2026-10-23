@@ -9,6 +9,7 @@ import "@fontsource/playfair-display/latin-400.css";
 import "@fontsource/playfair-display/latin-500.css";
 import "@fontsource/playfair-display/latin-400-italic.css";
 import "./refinements.css";
+import "./date-fields.css";
 export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",

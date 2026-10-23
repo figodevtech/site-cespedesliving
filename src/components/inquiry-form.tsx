@@ -6,6 +6,7 @@ import type { Flat } from "@/domain/types";
 import { addDays, today, validateStay } from "@/domain/dates";
 import { contactLink } from "@/lib/contact";
 import { useHydrated } from "./demo-hook";
+import { DateInput } from "./date-input";
 export function InquiryForm({
   flat,
   initial = {},
@@ -54,7 +55,7 @@ export function InquiryForm({
         </p>
       </div>
       <fieldset
-        className="form-grid"
+        className="form-grid stay-dates"
         disabled={!hydrated}
         aria-label="Datas e hóspedes"
         onChange={() => {
@@ -62,22 +63,20 @@ export function InquiryForm({
           setError("");
         }}
       >
-        <div className="field">
+        <div className="field date-field">
           <label htmlFor="inquiry-checkin">Entrada</label>
-          <input
+          <DateInput
             id="inquiry-checkin"
-            type="date"
             name="checkin"
             min={today()}
             required
             defaultValue={initial.checkin ?? addDays(today(), 3)}
           />
         </div>
-        <div className="field">
+        <div className="field date-field">
           <label htmlFor="inquiry-checkout">Saída</label>
-          <input
+          <DateInput
             id="inquiry-checkout"
-            type="date"
             name="checkout"
             min={addDays(today(), 1)}
             required

@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { addDays, today, validateStay } from "@/domain/dates";
+import { DateInput } from "./date-input";
 export const neighborhoods = [
   "Tambaú",
   "Manaíra",
@@ -58,20 +59,18 @@ export function SearchForm({
           ))}
         </select>
       </div>
-      <div className={compact ? "field" : "search-field"}>
+      <div className={`${compact ? "field" : "search-field"} date-field`}>
         <label htmlFor="search-checkin">Entrada</label>
-        <input
-          type="date"
+        <DateInput
           id="search-checkin"
           name="checkin"
           min={today()}
           defaultValue={initial.checkin ?? (compact ? "" : addDays(today(), 3))}
         />
       </div>
-      <div className={compact ? "field" : "search-field"}>
+      <div className={`${compact ? "field" : "search-field"} date-field`}>
         <label htmlFor="search-checkout">Saída</label>
-        <input
-          type="date"
+        <DateInput
           id="search-checkout"
           name="checkout"
           min={addDays(today(), 1)}

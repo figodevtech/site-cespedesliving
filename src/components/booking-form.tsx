@@ -13,6 +13,7 @@ import {
 } from "@/domain/dates";
 import { post } from "@/lib/http";
 import { useHydrated } from "./demo-hook";
+import { DateInput } from "./date-input";
 export function BookingForm({
   flat,
   checkout = false,
@@ -149,25 +150,23 @@ export function BookingForm({
           <span className="muted"> / noite, a partir de</span>
         </div>
       </div>
-      <fieldset className="form-grid" disabled={!hydrated}>
-        <div className="field">
+      <fieldset className="form-grid stay-dates" disabled={!hydrated}>
+        <div className="field date-field">
           <label htmlFor="booking-checkin">Entrada</label>
-          <input
+          <DateInput
             id="booking-checkin"
             name="checkin"
-            type="date"
             min={today()}
             required
             value={dates.checkin}
             onChange={(e) => changeDate("checkin", e.target.value)}
           />
         </div>
-        <div className="field">
+        <div className="field date-field">
           <label htmlFor="booking-checkout">Saída</label>
-          <input
+          <DateInput
             id="booking-checkout"
             name="checkout"
-            type="date"
             min={minimumCheckout}
             required
             value={dates.checkout}

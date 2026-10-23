@@ -1,5 +1,13 @@
 # Changelog — fase 1
 
+## 23/10/2026 — datas no celular
+
+- Campos de entrada e saída padronizados na consulta, na busca e no formulário de reserva, mantendo o calendário nativo.
+- Datas em linhas separadas nas telas pequenas, texto de 16px e controles com pelo menos 48px de altura.
+- Espaçamento aplicado ao contêiner para evitar problemas de largura dos campos nativos no iOS; foco visível preservado.
+- Busca da home acompanha a altura do conteúdo no celular, sem sobrepor o texto de apresentação.
+- Quatro testes específicos em Chromium/WebKit e nove verificações de regressão aprovados. Capturas em `docs/date-fields/`.
+
 ## 23/10/2026 — identidade visual fornecida
 
 - Logos originais preservadas em `public/logos/`.
