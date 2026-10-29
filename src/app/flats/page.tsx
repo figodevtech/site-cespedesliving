@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getFlats } from "@/services/flats";
+import { getFlatsPage } from "@/services/flats";
 import { PageHero, EmptyState } from "@/components/ui";
 import { FlatCard } from "@/components/flat-card";
 import { SearchForm } from "@/components/search-form";
 import { validateStay } from "@/domain/dates";
-import type { Filters } from "@/domain/types";
+import type { Filters, Modality, Flat } from "@/domain/types";
 import { isMock } from "@/services/adapter";
 export const metadata: Metadata = {
-  title: "Nossos flats",
+  title: "Nossos imóveis",
   description:
     "Explore flats em Tambaú, Manaíra, Cabo Branco e região. Encontre o espaço para sua próxima estadia.",
 };
@@ -23,13 +23,23 @@ export default async function FlatsPage({
     if (typeof v === "string") params[k] = v;
   });
   let error = "";
-  let flats: Awaited<ReturnType<typeof getFlats>> = [];
+  let flats: Flat[] = [];
+  let total = 0;
+  const rawPage = Number(params.page ?? 1);
+  const page = Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+  const pageSize = 12;
   try {
     const guests = params.guests ? Number(params.guests) : 1;
-    if (!Number.isInteger(guests) || guests < 1 || guests > 4)
-      throw new Error("Selecione de 1 a 4 hóspedes.");
-    if (params.checkin || params.checkout)
-      validateStay(params.checkin, params.checkout, guests, 4);
+    const modality = params.modality ?? "TEMPORADA";
+    if (!["TEMPORADA", "LOCACAO", "VENDA"].includes(modality))
+      throw new Error("Selecione uma finalidade válida.");
+    if (!Number.isInteger(guests) || guests < 1 || guests > 100)
+      throw new Error("Informe uma quantidade válida de hóspedes.");
+    if (modality === "TEMPORADA" && (params.checkin || params.checkout))
+      validateStay(params.checkin, params.checkout, guests, 100, undefined, {
+        minNights: 1,
+        maxNights: 730,
+      });
     const minPrice = params.minPrice ? Number(params.minPrice) : undefined;
     const maxPrice = params.maxPrice ? Number(params.maxPrice) : undefined;
     if (
@@ -43,28 +53,34 @@ export default async function FlatsPage({
         "Confira a faixa de preço. O mínimo deve ser menor que o máximo.",
       );
     const filters: Filters = {
+      modality: modality as Modality,
       neighborhood: params.neighborhood,
-      guests,
-      checkin: isMock() ? undefined : params.checkin,
-      checkout: isMock() ? undefined : params.checkout,
+      guests: modality === "TEMPORADA" ? guests : undefined,
+      checkin:
+        isMock() || modality !== "TEMPORADA" ? undefined : params.checkin,
+      checkout:
+        isMock() || modality !== "TEMPORADA" ? undefined : params.checkout,
       minPrice: isMock() ? undefined : minPrice,
       maxPrice: isMock() ? undefined : maxPrice,
       amenities: params.amenity ? [params.amenity] : [],
       sort:
         isMock() && params.sort?.startsWith("price-") ? undefined : params.sort,
     };
-    flats = await getFlats(filters);
+    const result = await getFlatsPage(filters, page, pageSize);
+    flats = result.items;
+    total = result.total;
   } catch (e) {
     error =
       e instanceof Error ? e.message : "Não foi possível carregar o catálogo.";
   }
   const labels: Record<string, string> = {
+    modality: "Finalidade",
     neighborhood: "Bairro",
     guests: "Hóspedes",
     checkin: "Entrada",
     checkout: "Saída",
-    minPrice: "Diária mínima",
-    maxPrice: "Diária máxima",
+    minPrice: "Valor mínimo",
+    maxPrice: "Valor máximo",
     amenity: "Facilidade",
   };
   const stayQuery = new URLSearchParams(
@@ -77,7 +93,7 @@ export default async function FlatsPage({
   return (
     <>
       <PageHero
-        eyebrow="Nossos flats"
+        eyebrow="Nossos imóveis"
         title="Seu próximo lugar favorito."
         description="Conforto para ficar. Liberdade para viver João Pessoa e região."
       />
@@ -121,8 +137,8 @@ export default async function FlatsPage({
           ) : (
             <>
               <p className="results-count" aria-live="polite">
-                {flats.length} flat{flats.length !== 1 ? "s" : ""} encontrado
-                {flats.length !== 1 ? "s" : ""}
+                {total}{" "}
+                {total === 1 ? "imóvel encontrado" : "imóveis encontrados"}
               </p>
               {flats.length ? (
                 <div className="card-grid">
@@ -131,6 +147,7 @@ export default async function FlatsPage({
                       flat={f}
                       key={f.id}
                       stayQuery={stayQuery}
+                      modality={params.modality as Modality | undefined}
                       showPrices={!isMock()}
                     />
                   ))}
@@ -141,11 +158,34 @@ export default async function FlatsPage({
                   href="/flats"
                   action="Limpar filtros"
                 >
-                  Nenhum flat atende a esta combinação. Experimente outras
+                  Nenhum imóvel atende a esta combinação. Experimente outras
                   datas, região ou número de hóspedes.
                 </EmptyState>
               )}
             </>
+          )}
+          {total > pageSize && (
+            <nav className="account-toolbar" aria-label="Páginas de imóveis">
+              {page > 1 ? (
+                <Link
+                  href={`/flats?${new URLSearchParams({ ...params, page: String(page - 1) })}`}
+                >
+                  Anteriores
+                </Link>
+              ) : (
+                <span />
+              )}
+              <span>
+                Página {page} de {Math.ceil(total / pageSize)}
+              </span>
+              {page * pageSize < total && (
+                <Link
+                  href={`/flats?${new URLSearchParams({ ...params, page: String(page + 1) })}`}
+                >
+                  Próximas
+                </Link>
+              )}
+            </nav>
           )}
           <p className="image-disclosure">
             Confirme disponibilidade, características e tarifas com o

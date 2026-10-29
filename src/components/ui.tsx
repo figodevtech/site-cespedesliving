@@ -38,6 +38,7 @@ export function Photo({
   loading?: "eager" | "lazy";
   sizes?: string;
 }) {
+  if (!src) return <div className="photo photo-missing" role="img" aria-label="Foto indisponível">Foto indisponível</div>;
   return (
     <Image
       src={src}

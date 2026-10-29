@@ -248,22 +248,24 @@ export default async function ContentRoute({
                 <h2>1. Preferências neste navegador</h2>
                 <p>
                   Os flats que você marca como favoritos ficam guardados no
-                  armazenamento local deste navegador. O site não solicita nem
-                  armazena senhas.
+                  armazenamento local deste navegador. Senhas e tokens de
+                  autenticação não são salvos nesse armazenamento.
                 </p>
                 <h2>2. Como os formulários funcionam</h2>
                 <p>
-                  Os formulários organizam sua consulta para envio pelo
-                  WhatsApp. O envio acontece quando você continua no canal de
-                  atendimento e envia a mensagem. Preparar uma mensagem no site
-                  não a envia automaticamente.
+                  Nome, CPF, e-mail e telefone são usados no cadastro e nas
+                  reservas. A autenticação é processada pelo Supabase e a sessão
+                  usa cookies. Reservas, interesses comerciais e solicitações de
+                  visita são registrados no sistema de gestão. Formulários de
+                  contato também podem preparar uma mensagem para o WhatsApp;
+                  nesse canal você decide quando enviá-la.
                 </p>
                 <h2>3. Seu controle</h2>
                 <p>
                   Você pode apagar os dados salvos em{" "}
                   <Link href="/favoritos">Favoritos</Link> ou nas configurações
-                  do navegador. O site não usa rastreamento publicitário nem
-                  analytics de terceiros.
+                  do navegador. Para consultar ou corrigir dados cadastrais,
+                  acesse Minha conta ou fale com a equipe.
                 </p>
                 <h2>4. Canais de atendimento</h2>
                 <p>
@@ -284,10 +286,12 @@ export default async function ContentRoute({
                 </p>
                 <h2>2. Consulta e confirmação</h2>
                 <p>
-                  Preencher uma consulta ou preparar uma mensagem não confirma
-                  uma hospedagem nem bloqueia o imóvel. A confirmação é
-                  fornecida pela equipe após validar o período e as condições
-                  comerciais.
+                  A reserva de temporada é confirmada ao concluir o formulário
+                  autenticado, após a validação de disponibilidade e preço no
+                  sistema. O código e o status ficam em Minha conta. Preparar uma
+                  mensagem, registrar interesse ou solicitar visita não confirma
+                  uma contratação. Pagamento e cancelamento são tratados pelo
+                  atendimento.
                 </p>
                 <h2>3. Imagens e informações</h2>
                 <p>

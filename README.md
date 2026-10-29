@@ -38,11 +38,11 @@ Para verificar especificamente os campos de data em Chromium e WebKit, instale t
 
 **WhatsApp oficial: +55 (83) 99912-3337**, configurado em `src/lib/contact.ts`. Pode ser substituído por `NEXT_PUBLIC_CONTACT_WHATSAPP`, com código do país e apenas dígitos. `.env.example` registra a configuração. `NEXT_PUBLIC_CONTACT_EMAIL` permite configurar um canal alternativo.
 
-- A consulta de hospedagem prepara uma mensagem com o flat, entrada, saída e hóspedes.
-- Os formulários de contato e parceria preparam a mensagem com os campos preenchidos pelo visitante.
+- A reserva de temporada consulta disponibilidade e preços no ERP e confirma com a conta de cliente autenticada.
+- O formulário de parceria registra o interesse no ERP e permite continuar no WhatsApp. O formulário de contato prepara a mensagem para esse canal.
 - Depois de preparar, o visitante clica em **Continuar no WhatsApp** e envia a mensagem naquele aplicativo.
-- Preparar a mensagem não significa enviá-la, e o site não informa entrega ou reserva confirmada. Os testes verificam o link e o conteúdo; não enviam mensagens.
-- Disponibilidade, características e tarifas devem ser confirmadas pelo atendimento. Enquanto não existe fonte tarifária integrada, os cards mostram **Tarifa sob consulta**.
+- Preparar uma mensagem não significa enviá-la. Testes automatizados não enviam mensagens nem emails reais.
+- Valores e disponibilidade vêm do ERP; pagamento, cancelamento e condições específicas são tratados pelo atendimento.
 
 ## Rotas
 
@@ -50,34 +50,33 @@ Para verificar especificamente os campos de data em Chromium e WebKit, instale t
 |---|---|
 | `/` | Apresentação, busca, flats em destaque e gestão de imóveis |
 | `/flats` | Busca por bairro, hóspedes, datas, facilidades e ordenação; filtros em URL |
-| `/flats/[slug]` | Galeria acessível, características e consulta pelo WhatsApp |
-| `/reservar/[slug]` | Preparação da consulta de hospedagem para o atendimento |
+| `/flats/[slug]` | Galeria, características, cotação de temporada e interesse/visita para venda ou locação |
+| `/reservar/[slug]` | Cotação e confirmação de temporada com conta de cliente |
 | `/favoritos` | Escolhas salvas neste navegador e exclusão dos dados locais |
 | `/proprietarios` | Serviços de gestão e mensagem de interesse pelo WhatsApp |
 | `/contato` | Número oficial, acesso direto ao WhatsApp e preparação de mensagem |
 | `/servicos`, `/sobre`, `/perguntas-frequentes` | Páginas institucionais |
-| `/entrar`, `/cadastro`, `/minha-conta` | Orientação ao atendimento enquanto a autenticação segura não está disponível |
-| `/painel-proprietario` | Acesso orientado pela equipe; não expõe números ou registros fictícios |
-| `/reserva-confirmada` | Orientação para consultar a solicitação com o atendimento; não inventa confirmação |
+| `/entrar`, `/cadastro`, `/minha-conta` | Autenticação, confirmação de e-mail, perfil e reservas do cliente |
+| `/painel-proprietario` | Imóveis, reservas, demonstrativos e repasses do proprietário autenticado |
+| `/reserva-confirmada` | Dados reais da reserva do cliente autenticado |
 | `/politica-de-privacidade`, `/termos-de-uso` | Informações sobre o funcionamento do site, sujeitas à validação jurídica da empresa |
 | Endereços ou slugs inexistentes | Página 404 com navegação de recuperação |
 
 ## Dados e integrações
 
-O ERP e a autenticação real **ainda não estão conectados**. Retirar os rótulos de demonstração não cria essas integrações. Para não apresentar dados fabricados como transações reais:
+O modo padrão agora é `DATA_ADAPTER=api`: catálogo, cotações, reservas, leads, perfil e portal usam a API do ERP. Veja o contrato e a configuração em [`docs/INTEGRACAO-ERP.md`](docs/INTEGRACAO-ERP.md).
 
-- Perfis locais não são usados como autenticação, e não há formulário que simule login.
-- O painel público não exibe indicadores financeiros fictícios.
-- Registros locais antigos não são mostrados como reservas ou contas reais.
-- As rotas internas de cotação, reserva e lead respondem com indisponibilidade enquanto `DATA_ADAPTER=mock` (padrão).
-- A antiga rota de acesso demonstrativo também está desativada.
-- As datas do calendário artificial não bloqueiam a busca pública.
+- Autenticação Supabase SSR com cookies exclusivos do site. Cadastro de cliente exige CPF, nome, e-mail, telefone, senha e confirmação do e-mail.
+- A conta do proprietário é provisionada exclusivamente no ERP e usa e-mail separado da conta de cliente. O backend do ERP autoriza cada consulta.
+- Reserva de temporada confirma no envio com cotação válida, preço esperado e chave de idempotência. Pagamento e cancelamento são tratados pela equipe.
+- Venda e locação possuem registro de interesse e solicitação de visita.
+- Proprietários acompanham imóveis, reservas, demonstrativos, repasses e comprovantes reais, sem edição pelo portal.
 
-Os adaptadores e testes de domínio da fase anterior permanecem isolados em `src/services/adapters/` e `tests/unit/`. O catálogo em `src/data/flats.ts` é o inventário de apresentação fornecido no projeto: a validação e substituição por dados de imóveis reais ainda cabem à equipe. A interface orienta a confirmar informações e valores no atendimento.
+Os adaptadores de demonstração permanecem isolados para testes. O inventário fictício em `src/data/flats.ts` não é cadastrado no banco nem usado no modo API. Sem imóveis publicados, o site mostra um catálogo vazio.
 
-Para integrar o ERP, revisar o contrato em `src/services/contracts.ts`, configurar `DATA_ADAPTER=api`, `ERP_API_BASE_URL` e, se necessário, `ERP_API_TOKEN` no servidor e reconstruir. Nunca colocar credenciais administrativas em variáveis `NEXT_PUBLIC_`. O adaptador de API usa `server-only`, timeout e uma lista explícita de campos públicos, sem `ownerId`.
+Copie `.env.example` para `.env.local`, configure URL e chave anon do Supabase, e mantenha o ERP em `http://localhost:3000` e o site em `http://localhost:3001` (`npm.cmd run dev -- --port 3001`). Não copie chaves administrativas. Requests privados propagam apenas o token do usuário autenticado; não usam token fixo de administrador.
 
-Autenticação, dados privados, histórico de reservas, autorização por proprietário e prevenção transacional de dupla reserva exigem implementação e validação próprias antes de serem habilitados.
+Configure as URLs de retorno do Supabase para `/auth/confirm`. A aplicação aceita confirmação por PKCE ou token hash e convites padrão com sessão no fragmento, convertida em cookie no servidor. Nenhuma senha ou token de autenticação é salvo em localStorage.
 
 ## Imagens, marca e publicação
 

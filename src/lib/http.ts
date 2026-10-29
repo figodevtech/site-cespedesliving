@@ -6,8 +6,9 @@ export async function post<T>(path: string, body: unknown): Promise<T> {
   });
   const result = await response.json();
   if (!response.ok)
-    throw new Error(
-      result.error ?? "Não foi possível concluir. Tente novamente.",
+    throw Object.assign(
+      new Error(result.error ?? "Não foi possível concluir. Tente novamente."),
+      { status: response.status },
     );
   return result as T;
 }

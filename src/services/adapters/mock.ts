@@ -57,6 +57,7 @@ export const mockAdapter: DataAdapter = {
     if (!input.acceptedTerms)
       throw new Error("Aceite os termos para continuar.");
     if (
+      !input.guest ||
       !input.guest.name.trim() ||
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.guest.email) ||
       input.guest.phone.replace(/\D/g, "").length < 10

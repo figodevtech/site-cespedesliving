@@ -1,15 +1,21 @@
-import type { Metadata } from "next";
-import { AccessState } from "@/components/access-state";
+import { AuthForm } from "@/components/auth-form";
 import { PageHero } from "@/components/ui";
-export const metadata: Metadata = {
-  title: "Entrar",
-  description: "Acesse sua conta na Cespedes Living.",
-};
-export default function Page() {
+import { safeNext } from "@/lib/auth-validation";
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const p = await searchParams;
   return (
     <>
       <PageHero eyebrow="Minha conta" title="Que bom ter você aqui." />
-      <AccessState />
+      <AuthForm
+        mode="signin"
+        role={p.role === "owner" ? "owner" : "guest"}
+        next={safeNext(p.next ?? null)}
+        linkError={Boolean(p.error)}
+      />
     </>
   );
 }

@@ -13,6 +13,7 @@ import "@fontsource/playfair-display/latin-500.css";
 import "@fontsource/playfair-display/latin-400-italic.css";
 import "./refinements.css";
 import "./date-fields.css";
+import "./integration.css";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {

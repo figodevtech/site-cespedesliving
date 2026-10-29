@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { addDays, today, validateStay } from "@/domain/dates";
+import type { Modality } from "@/domain/types";
 import { DateInput } from "./date-input";
 export const neighborhoods = [
   "Tambaú",
@@ -23,10 +24,13 @@ export function SearchForm({
 }) {
   const router = useRouter();
   const [error, setError] = useState("");
+  const [modality, setModality] = useState<Modality>(
+    (initial.modality as Modality) ?? "TEMPORADA",
+  );
   return (
     <form
       className={compact ? "catalog-filter" : "search-shell"}
-      aria-label="Buscar hospedagem"
+      aria-label="Buscar imóveis"
       onSubmit={(e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
@@ -37,8 +41,15 @@ export function SearchForm({
         try {
           const checkin = String(fd.get("checkin") ?? "");
           const checkout = String(fd.get("checkout") ?? "");
-          if (checkin || checkout)
-            validateStay(checkin, checkout, Number(fd.get("guests")), 4);
+          if (modality === "TEMPORADA" && (checkin || checkout))
+            validateStay(
+              checkin,
+              checkout,
+              Number(fd.get("guests") ?? 1),
+              100,
+              undefined,
+              { minNights: 1, maxNights: 730 },
+            );
           setError("");
           router.push(`/flats?${params}`);
         } catch (err) {
@@ -46,6 +57,19 @@ export function SearchForm({
         }
       }}
     >
+      <div className={compact ? "field" : "search-field"}>
+        <label htmlFor="search-modality">Finalidade</label>
+        <select
+          id="search-modality"
+          name="modality"
+          value={modality}
+          onChange={(event) => setModality(event.target.value as Modality)}
+        >
+          <option value="TEMPORADA">Temporada</option>
+          <option value="LOCACAO">Aluguel</option>
+          <option value="VENDA">Venda</option>
+        </select>
+      </div>
       <div className={compact ? "field" : "search-field"}>
         <label htmlFor="search-neighborhood">Destino</label>
         <select
@@ -59,46 +83,54 @@ export function SearchForm({
           ))}
         </select>
       </div>
-      <div className={`${compact ? "field" : "search-field"} date-field`}>
-        <label htmlFor="search-checkin">Entrada</label>
-        <DateInput
-          id="search-checkin"
-          name="checkin"
-          min={today()}
-          defaultValue={initial.checkin ?? (compact ? "" : addDays(today(), 3))}
-        />
-      </div>
-      <div className={`${compact ? "field" : "search-field"} date-field`}>
-        <label htmlFor="search-checkout">Saída</label>
-        <DateInput
-          id="search-checkout"
-          name="checkout"
-          min={addDays(today(), 1)}
-          defaultValue={
-            initial.checkout ?? (compact ? "" : addDays(today(), 6))
-          }
-        />
-      </div>
-      <div className={compact ? "field" : "search-field"}>
-        <label htmlFor="search-guests">Hóspedes</label>
-        <select
-          id="search-guests"
-          name="guests"
-          defaultValue={initial.guests ?? "2"}
-        >
-          {[1, 2, 3, 4].map((n) => (
-            <option value={n} key={n}>
-              {n} hóspede{n > 1 ? "s" : ""}
-            </option>
-          ))}
-        </select>
-      </div>
+      {modality === "TEMPORADA" && (
+        <div className={`${compact ? "field" : "search-field"} date-field`}>
+          <label htmlFor="search-checkin">Entrada</label>
+          <DateInput
+            id="search-checkin"
+            name="checkin"
+            min={today()}
+            defaultValue={
+              initial.checkin ?? (compact ? "" : addDays(today(), 3))
+            }
+          />
+        </div>
+      )}
+      {modality === "TEMPORADA" && (
+        <div className={`${compact ? "field" : "search-field"} date-field`}>
+          <label htmlFor="search-checkout">Saída</label>
+          <DateInput
+            id="search-checkout"
+            name="checkout"
+            min={addDays(today(), 1)}
+            defaultValue={
+              initial.checkout ?? (compact ? "" : addDays(today(), 6))
+            }
+          />
+        </div>
+      )}
+      {modality === "TEMPORADA" && (
+        <div className={compact ? "field" : "search-field"}>
+          <label htmlFor="search-guests">Hóspedes</label>
+          <select
+            id="search-guests"
+            name="guests"
+            defaultValue={initial.guests ?? "2"}
+          >
+            {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => (
+              <option value={n} key={n}>
+                {n} hóspede{n > 1 ? "s" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       {compact && (
         <>
           {showPrices && (
             <>
               <div className="field">
-                <label htmlFor="min-price">Diária mínima (R$)</label>
+                <label htmlFor="min-price">Valor mínimo (R$)</label>
                 <input
                   id="min-price"
                   type="number"
@@ -110,7 +142,7 @@ export function SearchForm({
                 />
               </div>
               <div className="field">
-                <label htmlFor="max-price">Diária máxima (R$)</label>
+                <label htmlFor="max-price">Valor máximo (R$)</label>
                 <input
                   id="max-price"
                   type="number"
@@ -158,7 +190,7 @@ export function SearchForm({
       )}
       <button className="button" type="submit">
         <Search size={17} />
-        Buscar flats
+        Buscar imóveis
       </button>
       {error && (
         <p className="form-error search-error" role="alert">

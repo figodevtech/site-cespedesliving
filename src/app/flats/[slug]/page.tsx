@@ -10,6 +10,9 @@ import {
   Check,
   ArrowRight,
 } from "lucide-react";
+import { PropertyInterest } from "@/components/property-interest";
+import { modalities, modalityLabels, propertyPrice } from "@/domain/property";
+import { money } from "@/domain/dates";
 import { getFlat } from "@/services/flats";
 import { isMock } from "@/services/adapter";
 import { Gallery } from "@/components/gallery";
@@ -154,11 +157,11 @@ export default async function FlatDetail({
               <div>
                 <h3>Regras da estadia</h3>
                 <ul>
-                  <li>Confirme o horário de check-in com o atendimento.</li>
-                  <li>O horário de check-out é informado na confirmação.</li>
-                  <li>Não são permitidas festas ou eventos.</li>
+                  <li>Check-in: {flat.checkinTime ?? "confirme com o atendimento"}.</li>
+                  <li>Check-out: {flat.checkoutTime ?? "confirme com o atendimento"}.</li>
                   <li>Respeite o limite de {flat.maxGuests} hóspedes.</li>
                 </ul>
+                {flat.rules && <p style={{ whiteSpace: "pre-line" }}>{flat.rules}</p>}
               </div>
               <div>
                 <h3>Solicitação e confirmação</h3>
@@ -174,11 +177,13 @@ export default async function FlatDetail({
           </section>
         </div>
         <aside aria-label="Planejar reserva">
-          {isMock() ? (
+          {modalities(flat).filter(m => m !== "TEMPORADA").map(m => <section className="dashboard-panel" key={m}><h2>{modalityLabels[m]}</h2><p>{propertyPrice(flat,m).value != null ? money(propertyPrice(flat,m).value!) : "Valor sob consulta"} {propertyPrice(flat,m).suffix}</p></section>)}
+          {modalities(flat).includes("TEMPORADA") ? isMock() ? (
             <InquiryForm flat={flat} initial={await searchParams} />
           ) : (
             <BookingForm flat={flat} initial={await searchParams} />
-          )}
+          ) : null}
+          {modalities(flat).some(m => m !== "TEMPORADA") && <PropertyInterest flat={flat}/>}
         </aside>
       </div>
     </div>

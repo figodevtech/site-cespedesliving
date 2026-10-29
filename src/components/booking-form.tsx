@@ -17,25 +17,30 @@ import { DateInput } from "./date-input";
 export function BookingForm({
   flat,
   checkout = false,
+  customer = null,
   initial = {},
 }: {
   flat: Flat;
   checkout?: boolean;
+  /** Cliente com sessão ativa; sem ele, confirmar leva ao login guardando a estadia. */
+  customer?: { name: string; email: string } | null;
   initial?: Record<string, string | undefined>;
 }) {
   const router = useRouter();
   const hydrated = useHydrated();
   const sequence = useRef(0);
+  const idempotencyKey = useRef<string | null>(null);
   const [dates, setDates] = useState({
     checkin: initial.checkin ?? addDays(today(), 3),
     checkout: initial.checkout ?? addDays(today(), 6),
-    guests: Number(initial.guests ?? 2),
+    guests: Number(initial.guests ?? Math.min(2, flat.maxGuests)),
   });
   const [quote, setQuote] = useState<ReservationQuote | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [quoteRevision, setQuoteRevision] = useState(0);
+  const loginHref = `/entrar?next=${encodeURIComponent(`/reservar/${flat.slug}?${new URLSearchParams({ ...dates, guests: String(dates.guests) })}`)}`;
   let minimumCheckout = today();
   try {
     if (dates.checkin) minimumCheckout = addDays(dates.checkin, 1);
@@ -56,6 +61,8 @@ export function BookingForm({
           dates.checkout,
           dates.guests,
           flat.maxGuests,
+          today(),
+          { minNights: flat.minNights ?? 1, maxNights: flat.maxNights ?? 60 },
         );
         const response = await fetch("/api/quote", {
           method: "POST",
@@ -82,11 +89,19 @@ export function BookingForm({
       controller.abort();
       clearTimeout(timer);
     };
-  }, [dates, flat.id, flat.maxGuests, quoteRevision]);
+  }, [
+    dates,
+    flat.id,
+    flat.maxGuests,
+    flat.minNights,
+    flat.maxNights,
+    quoteRevision,
+  ]);
   function changeDate(key: "checkin" | "checkout" | "guests", value: string) {
     sequence.current++;
     setLoading(true);
     setQuote(null);
+    idempotencyKey.current = null;
     setDates((d) => ({
       ...d,
       [key]: key === "guests" ? Number(value) : value,
@@ -104,6 +119,8 @@ export function BookingForm({
             dates.checkout,
             dates.guests,
             flat.maxGuests,
+            today(),
+            { minNights: flat.minNights ?? 1, maxNights: flat.maxNights ?? 60 },
           );
           if (!checkout) {
             router.push(
@@ -111,17 +128,20 @@ export function BookingForm({
             );
             return;
           }
+          if (!customer) {
+            router.push(loginHref);
+            return;
+          }
           const fd = new FormData(e.currentTarget);
+          idempotencyKey.current ??= crypto.randomUUID();
           setSending(true);
           setError("");
           const booking = await post<Booking>("/api/booking-requests", {
             flatId: flat.id,
             ...dates,
-            guest: {
-              name: fd.get("name"),
-              email: fd.get("email"),
-              phone: fd.get("phone"),
-            },
+            quoteId: quote.quoteId,
+            expectedTotal: quote.total,
+            idempotencyKey: idempotencyKey.current,
             acceptedTerms: fd.get("terms") === "on",
           });
           if (booking.demo)
@@ -132,6 +152,11 @@ export function BookingForm({
             `/reserva-confirmada?id=${encodeURIComponent(booking.id)}`,
           );
         } catch (err) {
+          // Sessão expirou entre abrir a página e confirmar: volta ao login sem perder as datas.
+          if ((err as { status?: number })?.status === 401) {
+            router.push(loginHref);
+            return;
+          }
           setError(
             err instanceof Error
               ? err.message
@@ -143,7 +168,7 @@ export function BookingForm({
     >
       <div className="widget-heading">
         <span className="eyebrow gold-text">
-          {checkout ? "SUA SOLICITAÇÃO" : "PLANEJE SUA ESTADIA"}
+          {checkout ? "SUA RESERVA" : "PLANEJE SUA ESTADIA"}
         </span>
         <div>
           <strong>{money(flat.fromPrice)}</strong>
@@ -193,44 +218,26 @@ export function BookingForm({
         <fieldset className="guest-fields">
           <legend>
             <CalendarCheck size={20} />
-            Dados do hóspede
+            Confirme sua reserva
           </legend>
-          <p className="muted">Preencha os dados para solicitar sua estadia.</p>
-          <div className="field">
-            <label htmlFor="guest-name">Nome completo</label>
-            <input
-              id="guest-name"
-              name="name"
-              autoComplete="name"
-              maxLength={120}
-              required
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="guest-email">E-mail</label>
-            <input
-              id="guest-email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              maxLength={254}
-              required
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="guest-phone">Telefone com DDD</label>
-            <input
-              id="guest-phone"
-              name="phone"
-              type="tel"
-              autoComplete="tel"
-              pattern="[+()0-9 .-]{10,30}"
-              title="Informe um telefone com DDD, de 10 a 30 caracteres."
-              required
-            />
-          </div>
+          {customer ? (
+            <p className="muted">
+              Reservando como <strong>{customer.name}</strong> ({customer.email}
+              ).
+            </p>
+          ) : (
+            <>
+              <p className="muted">
+                A reserva usa os dados da sua conta de cliente. Entre ou crie
+                sua conta para confirmar; as datas escolhidas ficam guardadas.
+              </p>
+              <Link className="text-link" href={loginHref}>
+                Entrar ou criar conta de cliente
+              </Link>
+            </>
+          )}
           <label className="checkbox-label">
-            <input type="checkbox" name="terms" required />
+            <input type="checkbox" name="terms" required={Boolean(customer)} />
             <span>
               Li os <Link href="/termos-de-uso">termos de uso</Link> e a{" "}
               <Link href="/politica-de-privacidade">
@@ -288,7 +295,10 @@ export function BookingForm({
           <button
             type="button"
             className="text-link"
-            onClick={() => setQuoteRevision((n) => n + 1)}
+            onClick={() => {
+              idempotencyKey.current = null;
+              setQuoteRevision((n) => n + 1);
+            }}
           >
             Tentar consulta novamente
           </button>
@@ -300,15 +310,17 @@ export function BookingForm({
         disabled={loading || !quote?.available || sending}
       >
         {sending
-          ? "Registrando solicitação…"
+          ? "Confirmando reserva…"
           : checkout
-            ? "Enviar solicitação"
-            : "Solicitar reserva"}
+            ? customer
+              ? "Confirmar reserva"
+              : "Entrar para confirmar"
+            : "Reservar"}
         <ArrowRight size={18} />
       </button>
       <p className="widget-footnote">
-        <ShieldCheck size={15} />
-        Você não será cobrado nesta etapa.
+        <ShieldCheck size={15} />O pagamento é combinado com o atendimento. A
+        confirmação bloqueia o período.
       </p>
     </form>
   );

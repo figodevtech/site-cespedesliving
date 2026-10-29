@@ -815,6 +815,19 @@ main {
   color: #58636b;
   line-height: 1.7;
 }
+.resend-confirmation {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px dashed rgba(88, 99, 107, 0.35);
+  border-radius: 10px;
+}
+.resend-confirmation p {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
 .checkbox-label input {
   width: 17px;
   height: 17px;

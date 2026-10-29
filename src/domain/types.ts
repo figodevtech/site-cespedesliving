@@ -1,16 +1,37 @@
+export type Modality = "TEMPORADA" | "LOCACAO" | "VENDA";
+export type SiteProfile = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  cpf: string;
+  role: "guest" | "owner";
+};
 export type Flat = {
   id: string;
   slug: string;
   title: string;
   neighborhood: string;
   city: string;
-  state: "PB";
+  state: string;
+  modalities?: Modality[];
+  prices?: {
+    nightly?: number | null;
+    monthly?: number | null;
+    sale?: number | null;
+  };
+  occupancyStatus?: string;
   description: string;
   coverImage: string;
   gallery: string[];
   /** true quando as fotos são do imóvel real (não ambientação gerada por IA). */
   realPhotos?: boolean;
   maxGuests: number;
+  minNights?: number;
+  maxNights?: number;
+  rules?: string;
+  checkinTime?: string;
+  checkoutTime?: string;
   bedrooms: number;
   bathrooms: number;
   areaSqm: number;
@@ -36,8 +57,10 @@ export type ReservationQuote = {
   total: number;
   currency: "BRL";
   expiresAt?: string;
+  quoteId?: string;
 };
 export type Filters = {
+  modality?: Modality;
   neighborhood?: string;
   guests?: number;
   checkin?: string;
@@ -49,17 +72,24 @@ export type Filters = {
 };
 export type Guest = { name: string; email: string; phone: string };
 export type BookingInput = AvailabilityQuery & {
-  guest: Guest;
+  guest?: Guest;
   acceptedTerms: boolean;
+  quoteId?: string;
+  expectedTotal?: number;
+  idempotencyKey?: string;
 };
-export type Booking = BookingInput & {
+export type Booking = {
   id: string;
   flatTitle: string;
   slug: string;
+  checkin: string;
+  checkout: string;
+  guests: number;
   total: number;
-  status: "PENDING";
+  status: "PENDING" | "CONFIRMED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+  paymentStatus?: "PENDING" | "PARTIAL" | "PAID" | "REFUNDED";
   createdAt: string;
-  demo: boolean;
+  demo?: boolean;
 };
 export type DemoProfile = {
   name: string;
@@ -87,5 +117,16 @@ export type OwnerDashboard = {
     amount: number;
     status: string;
   }[];
-  maintenance: { title: string; status: string; amount: number }[];
+  maintenance: { title: string; status: string; amount: number | null }[];
+};
+export type OwnerStatement = {
+  id: string;
+  date: string;
+  property: string;
+  description: string;
+  revenue: number;
+  expenses: number;
+  fee: number;
+  payout: number;
+  fileId?: string;
 };

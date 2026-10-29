@@ -19,6 +19,6 @@ export interface DataAdapter {
     email: string;
     role: "guest" | "owner";
   }): Promise<DemoProfile>;
-  createLead(input: LeadInput): Promise<{ id: string; demo: boolean }>;
+  createLead(input: LeadInput): Promise<{ id: string | number | null; success?: boolean; demo?: boolean }>;
   dashboard(): Promise<OwnerDashboard>;
 }

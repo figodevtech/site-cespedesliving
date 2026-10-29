@@ -180,7 +180,7 @@ export function OwnerDashboardView({ data }: { data: OwnerDashboard }) {
               <h3>{m.title}</h3>
               <p>{m.status}</p>
             </div>
-            <strong>{money(m.amount)}</strong>
+            <strong>{m.amount == null ? "Sem despesa vinculada" : money(m.amount)}</strong>
           </article>
         ))}
         <p className="muted">

@@ -1,0 +1,17 @@
+.auth-container { max-width: 580px; }
+.auth-container .dashboard-panel { display: grid; gap: 18px; }
+.auth-container h2 { font-size: 1.8rem; }
+.field { display: grid; gap: 7px; }
+.field input, .field select, .field textarea { width: 100%; min-width: 0; padding: 12px; border: 1px solid var(--line, #ddd); border-radius: 8px; font: inherit; background: white; color: #142a42; }
+.account-grid { display: grid; grid-template-columns: minmax(250px, 1fr) minmax(0, 2fr); gap: 24px; align-items: start; }
+.portal-filters { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin-bottom: 28px; }
+.portal-filters .field { flex: 1; min-width: 160px; }
+.owner-property-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+.reservation-card { padding: 18px 0; border-bottom: 1px solid #ddd; }
+.reservation-card h3 { margin-bottom: 10px; }
+.photo-missing { display: grid; place-items: center; background: #edf0f1; color: #55636c; font-size: 14px; }
+.dashboard .dashboard-panel { margin-top: 24px; }
+.dashboard table { width: 100%; border-collapse: collapse; }
+.dashboard th, .dashboard td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+.search-shell { flex-wrap: wrap; }
+@media(max-width: 700px) { .account-grid { grid-template-columns: 1fr; } .portal-filters { display: grid; grid-template-columns: 1fr; } .dashboard-panel { padding: 20px; } }

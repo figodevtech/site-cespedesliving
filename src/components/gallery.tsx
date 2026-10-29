@@ -67,6 +67,7 @@ export function Gallery({
       document.body.style.overflow = "";
     };
   }, []);
+  if (!images.length) return <p className="notice">As fotos deste imóvel estão sendo atualizadas. Fale com o atendimento para mais informações.</p>;
   return (
     <>
       <div

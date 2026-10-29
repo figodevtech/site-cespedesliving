@@ -1,15 +1,15 @@
 export const faq = [
   [
     "Como faço para solicitar uma hospedagem?",
-    "Explore o catálogo, abra um flat e escolha as datas e os hóspedes. Prepare sua consulta e continue no WhatsApp para enviá-la ao atendimento. A reserva é confirmada pela equipe após validar a disponibilidade e as condições da estadia.",
+    "Abra um imóvel de temporada, escolha datas e hóspedes e confira a cotação. Entre com sua conta de cliente e confirme a reserva. O sistema valida o período e bloqueia o imóvel quando a confirmação é concluída.",
   ],
   [
     "Como confirmo fotos, tarifas e disponibilidade?",
-    "Consulte nosso atendimento para receber fotos atualizadas, características, tarifas e disponibilidade do imóvel. As imagens de ambientação do site são geradas por IA e não substituem fotos verificadas da acomodação.",
+    "As características e fotos de cada imóvel aparecem no catálogo. A cotação consulta disponibilidade e tarifas no sistema. Imagens institucionais de ambientação estão identificadas; fale com a equipe se precisar de informações adicionais.",
   ],
   [
     "O que acontece depois da solicitação?",
-    "Ao continuar no WhatsApp, envie a mensagem preparada para nossa equipe analisar seu período e informar os próximos passos. A consulta não bloqueia o imóvel nem confirma a hospedagem.",
+    "Após confirmar uma reserva de temporada, você recebe o código e pode acompanhá-la em Minha conta. O pagamento é combinado com a equipe. Formulários de interesse e visita são solicitações comerciais e dependem de retorno do atendimento.",
   ],
   [
     "Existe pagamento online pelo site?",
@@ -25,7 +25,7 @@ export const faq = [
   ],
   [
     "Como acompanho os resultados do meu imóvel?",
-    "Entre em contato com a equipe para acompanhar a gestão do seu imóvel. O acesso à área do proprietário será disponibilizado individualmente.",
+    "Entre na Área do proprietário com a conta criada pela equipe. Você pode consultar seus imóveis, reservas, receitas, despesas, repasses e demonstrativos. Esse acesso é separado da conta de cliente.",
   ],
   [
     "Como são contadas as noites?",
@@ -61,7 +61,7 @@ export const contentPages = {
     eyebrow: "Privacidade",
     title: "Seus dados, com clareza.",
     description:
-      "Entenda como funcionam os favoritos e os canais de contato do site.",
+      "Entenda como funcionam sua conta, reservas, favoritos e canais de contato.",
   },
   "termos-de-uso": {
     eyebrow: "Termos de uso",

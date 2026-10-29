@@ -8,7 +8,7 @@ import { contactLink, contactPhoneLabel } from "@/lib/contact";
 import { Brand } from "./brand";
 const navigation = [
   ["Início", "/"],
-  ["Flats", "/flats"],
+  ["Imóveis", "/flats"],
   ["Serviços", "/servicos"],
   ["Para proprietários", "/proprietarios"],
   ["Sobre", "/sobre"],

@@ -91,6 +91,7 @@ export default async function Home() {
               Ver todos os flats
             </ButtonLink>
           </div>
+          {!flats.length && <p className="notice">Nenhum imóvel publicado neste momento. Fale com a equipe para consultar novas oportunidades.</p>}
           <div className="card-grid">
             {flats.slice(0, 3).map((f) => (
               <FlatCard flat={f} key={f.id} showPrices={!isMock()} />

@@ -30,14 +30,15 @@ export function validateStay(
   guests: number,
   capacity: number,
   currentDay = today(),
+  bounds = { minNights: 1, maxNights: 60 },
 ): number {
   const nights = nightsBetween(checkin, checkout);
   if (checkin < currentDay)
     throw new Error("A entrada não pode ser no passado.");
   if (nights < 1) throw new Error("A saída precisa ser posterior à entrada.");
-  if (nights > 60)
+  if (nights < bounds.minNights || nights > bounds.maxNights)
     throw new Error(
-      "Para estadias acima de 60 noites, fale com o atendimento.",
+      `Escolha de ${bounds.minNights} a ${bounds.maxNights} noites para este imóvel.`,
     );
   if (!Number.isInteger(guests) || guests < 1 || guests > capacity)
     throw new Error(`Este flat acomoda de 1 a ${capacity} hóspedes.`);

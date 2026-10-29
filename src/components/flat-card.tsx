@@ -8,7 +8,8 @@ import {
   Wifi,
   ArrowRight,
 } from "lucide-react";
-import type { Flat } from "@/domain/types";
+import type { Flat, Modality } from "@/domain/types";
+import { propertyPrice, modalities, modalityLabels } from "@/domain/property";
 import { money } from "@/domain/dates";
 import { writeDemo } from "@/lib/demo-storage";
 import { useDemoValue } from "./demo-hook";
@@ -37,11 +38,14 @@ export function FlatCard({
   flat,
   stayQuery = "",
   showPrices = false,
+  modality,
 }: {
   flat: Flat;
   stayQuery?: string;
   showPrices?: boolean;
+  modality?: Modality;
 }) {
+  const price = propertyPrice(flat, modality);
   const href = `/flats/${flat.slug}${stayQuery ? `?${stayQuery}` : ""}`;
   return (
     <article className="flat-card">
@@ -56,8 +60,13 @@ export function FlatCard({
             }
           />
         </Link>
-        <span className="image-tag">{flat.tag}</span>
-        {!flat.realPhotos && (
+        <span className="image-tag">
+          {flat.tag ||
+            modalities(flat)
+              .map((m) => modalityLabels[m])
+              .join(" · ")}
+        </span>
+        {!flat.realPhotos && flat.coverImage && (
           <span className="illustrative-tag">Imagem de ambientação</span>
         )}
         <FavoriteButton slug={flat.slug} />
@@ -81,14 +90,15 @@ export function FlatCard({
           </span>
           <span>
             <Wifi size={15} />
-            Wi-Fi
+            {flat.amenities.includes("Wi-Fi") ? "Wi-Fi" : `${flat.areaSqm} m²`}
           </span>
         </div>
         <div className="card-footer">
           {showPrices ? (
             <div className="card-price">
               <small>A partir de</small>
-              {money(flat.fromPrice)} <span>/ noite</span>
+              {price.value != null ? money(price.value) : "Sob consulta"}{" "}
+              <span>{price.suffix}</span>
             </div>
           ) : (
             <div className="card-price">
