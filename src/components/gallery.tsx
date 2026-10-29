@@ -24,9 +24,30 @@ export function Gallery({
 }) {
   const altSuffix = realPhotos ? "foto real" : "imagem ilustrativa";
   const [index, setIndex] = useState(0);
+  // Monta todas as fotos da galeria para que a troca entre elas seja instantânea.
+  const [warm, setWarm] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLButtonElement | null>(null);
+  const warmUp = () => setWarm(true);
+  useEffect(() => {
+    const saveData = (
+      navigator as Navigator & { connection?: { saveData?: boolean } }
+    ).connection?.saveData;
+    if (saveData) return;
+    // Espera a página terminar de carregar para não competir com a capa.
+    let timer: number | undefined;
+    const schedule = () => {
+      timer = window.setTimeout(warmUp, 800);
+    };
+    if (document.readyState === "complete") schedule();
+    else window.addEventListener("load", schedule, { once: true });
+    return () => {
+      window.removeEventListener("load", schedule);
+      window.clearTimeout(timer);
+    };
+  }, []);
   const open = (i: number, button: HTMLButtonElement) => {
+    warmUp();
     setIndex(i);
     opener.current = button;
     dialog.current?.showModal();
@@ -48,7 +69,12 @@ export function Gallery({
   }, []);
   return (
     <>
-      <div className="gallery-grid">
+      <div
+        className="gallery-grid"
+        onPointerEnter={warmUp}
+        onFocusCapture={warmUp}
+        onTouchStart={warmUp}
+      >
         {images.slice(0, 4).map((src, i) => (
           <button
             type="button"
@@ -118,11 +144,21 @@ export function Gallery({
           </button>
         </div>
         <div className="lightbox-photo">
-          <Photo
-            src={images[index]}
-            alt={`${caption(images[index])} de ${title} — ${altSuffix}`}
-            sizes="90vw"
-          />
+          {warm &&
+            images.map((src, i) => (
+              <div
+                className={`lightbox-slide${i === index ? " is-active" : ""}`}
+                aria-hidden={i !== index}
+                key={src}
+              >
+                <Photo
+                  src={src}
+                  alt={`${caption(src)} de ${title} — ${altSuffix}`}
+                  sizes="90vw"
+                  loading="eager"
+                />
+              </div>
+            ))}
         </div>
         <div className="lightbox-controls">
           <button

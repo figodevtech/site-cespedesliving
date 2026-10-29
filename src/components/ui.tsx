@@ -28,12 +28,14 @@ export function Photo({
   alt,
   className = "",
   priority = false,
+  loading,
   sizes = "(max-width: 700px) 100vw, (max-width: 1000px) 50vw, 33vw",
 }: {
   src: string;
   alt: string;
   className?: string;
   priority?: boolean;
+  loading?: "eager" | "lazy";
   sizes?: string;
 }) {
   return (
@@ -43,6 +45,7 @@ export function Photo({
       fill
       sizes={sizes}
       priority={priority}
+      loading={priority ? undefined : loading}
       className={`photo ${className}`}
       placeholder="blur"
       blurDataURL="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIxNCI+PHBhdGggZmlsbD0iI2Q1Y2ViZiIgZD0iTTAgMGgyMHYxNEgweiIvPjwvc3ZnPg=="

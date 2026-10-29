@@ -597,6 +597,17 @@ main {
 .lightbox-photo .photo {
   object-fit: contain;
 }
+/* Todas as fotos ficam montadas e decodificadas; só a ativa aparece. */
+.lightbox-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.lightbox-slide.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
 .lightbox-controls {
   display: flex;
   align-items: center;
