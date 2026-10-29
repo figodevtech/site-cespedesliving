@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { Header, Footer } from "@/components/shell";
+import { PageTransition } from "@/components/page-transition";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 import "@fontsource/dm-sans/latin-400.css";
@@ -83,6 +84,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <PageTransition />
         <Analytics />
       </body>
     </html>
