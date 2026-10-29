@@ -483,6 +483,34 @@ main {
 .detail-title .eyebrow {
   margin-bottom: 14px;
 }
+.detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.share-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--navy);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--navy);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.share-button:hover {
+  background: var(--navy);
+  color: #fff;
+}
 .detail-favorite {
   position: relative;
   width: 44px;
@@ -1790,6 +1818,10 @@ main {
   .detail-favorite {
     width: 38px;
     height: 38px;
+  }
+  .share-button {
+    height: 38px;
+    padding: 0 14px;
   }
   .detail-favorite .favorite-button {
     width: 38px;

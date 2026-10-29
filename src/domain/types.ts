@@ -8,6 +8,8 @@ export type Flat = {
   description: string;
   coverImage: string;
   gallery: string[];
+  /** true quando as fotos são do imóvel real (não ambientação gerada por IA). */
+  realPhotos?: boolean;
   maxGuests: number;
   bedrooms: number;
   bathrooms: number;

@@ -33,6 +33,7 @@ function publicFlat(f: Flat): Flat {
     description: f.description,
     coverImage: f.coverImage,
     gallery: f.gallery,
+    realPhotos: f.realPhotos,
     maxGuests: f.maxGuests,
     bedrooms: f.bedrooms,
     bathrooms: f.bathrooms,

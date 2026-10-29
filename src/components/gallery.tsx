@@ -8,15 +8,21 @@ function caption(src: string) {
   if (src.includes("kitchen")) return "Cozinha";
   if (src.includes("bathroom")) return "Banheiro";
   if (src.includes("balcony")) return "Varanda";
+  if (src.includes("workspace")) return "Bancada";
+  if (src.includes("entrance")) return "Entrada";
+  if (src.includes("studio")) return "Studio";
   return "Sala";
 }
 export function Gallery({
   images,
   title,
+  realPhotos = false,
 }: {
   images: string[];
   title: string;
+  realPhotos?: boolean;
 }) {
+  const altSuffix = realPhotos ? "foto real" : "imagem ilustrativa";
   const [index, setIndex] = useState(0);
   const dialog = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLButtonElement | null>(null);
@@ -43,7 +49,7 @@ export function Gallery({
   return (
     <>
       <div className="gallery-grid">
-        {images.map((src, i) => (
+        {images.slice(0, 4).map((src, i) => (
           <button
             type="button"
             className={`gallery-cell gallery-cell-${i}`}
@@ -56,7 +62,7 @@ export function Gallery({
           >
             <Photo
               src={src}
-              alt={`${caption(src)} de ${title} — imagem ilustrativa`}
+              alt={`${caption(src)} de ${title} — ${altSuffix}`}
               priority={i === 0}
               sizes={
                 i === 0
@@ -67,16 +73,20 @@ export function Gallery({
             {i === 0 && (
               <span className="gallery-badge">
                 <Images size={16} />
-                Ver fotos
+                {images.length > 4
+                  ? `Ver as ${images.length} fotos`
+                  : "Ver fotos"}
               </span>
             )}
           </button>
         ))}
       </div>
-      <p className="image-disclosure">
-        Imagens de ambientação geradas por IA. Solicite ao atendimento fotos
-        atualizadas e informações do imóvel antes de reservar.
-      </p>
+      {!realPhotos && (
+        <p className="image-disclosure">
+          Imagens de ambientação geradas por IA. Solicite ao atendimento fotos
+          atualizadas e informações do imóvel antes de reservar.
+        </p>
+      )}
       <dialog
         ref={dialog}
         className="lightbox"
@@ -96,7 +106,8 @@ export function Gallery({
       >
         <div className="lightbox-toolbar">
           <p>
-            Imagem de ambientação · {index + 1} de {images.length}
+            {realPhotos ? "Foto do imóvel" : "Imagem de ambientação"} ·{" "}
+            {index + 1} de {images.length}
           </p>
           <button
             className="icon-button"
@@ -109,7 +120,7 @@ export function Gallery({
         <div className="lightbox-photo">
           <Photo
             src={images[index]}
-            alt={`${caption(images[index])} de ${title} — imagem ilustrativa`}
+            alt={`${caption(images[index])} de ${title} — ${altSuffix}`}
             sizes="90vw"
           />
         </div>

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Header, Footer } from "@/components/shell";
+import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 import "@fontsource/dm-sans/latin-400.css";
 import "@fontsource/dm-sans/latin-500.css";
@@ -11,9 +13,7 @@ import "@fontsource/playfair-display/latin-400-italic.css";
 import "./refinements.css";
 import "./date-fields.css";
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-  ),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Cespedes Living | Hospedagens em João Pessoa",
     template: "%s | Cespedes Living",
@@ -73,7 +73,8 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body>
+      {/* Extensões (ex.: ColorZilla) injetam atributos no body antes da hidratação. */}
+      <body suppressHydrationWarning>
         <a href="#main-content" className="skip-link">
           Pular para o conteúdo principal
         </a>
@@ -82,6 +83,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <Analytics />
       </body>
     </html>
   );

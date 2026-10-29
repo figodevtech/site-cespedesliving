@@ -16,15 +16,43 @@ import { Gallery } from "@/components/gallery";
 import { BookingForm } from "@/components/booking-form";
 import { InquiryForm } from "@/components/inquiry-form";
 import { FavoriteButton } from "@/components/flat-card";
+import { ShareButton } from "@/components/share-button";
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const flat = await getFlat((await params).slug);
+  if (!flat) return { title: "Flat não encontrado" };
+  const plural = (n: number, word: string) => `${n} ${word}${n > 1 ? "s" : ""}`;
+  const facts = [
+    `${flat.neighborhood}, ${flat.city}`,
+    `até ${flat.maxGuests} hóspedes`,
+    plural(flat.bedrooms, "quarto"),
+    plural(flat.bathrooms, "banheiro"),
+    `${flat.areaSqm} m²`,
+  ].join(" · ");
+  const description = `${facts}. ${flat.description} Comodidades: ${flat.amenities.slice(0, 5).join(", ")}.`;
+  const url = `/flats/${flat.slug}`;
+  // openGraph do layout é substituído (não mesclado), por isso repetimos siteName/locale.
+  // A imagem vem de ./opengraph-image.ts.
   return {
-    title: flat?.title ?? "Flat não encontrado",
-    description: flat?.description,
+    title: flat.title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "website",
+      locale: "pt_BR",
+      siteName: "Cespedes Living",
+      url,
+      title: `${flat.title} | Cespedes Living`,
+      description,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${flat.title} | Cespedes Living`,
+      description,
+    },
   };
 }
 export default async function FlatDetail({
@@ -54,11 +82,18 @@ export default async function FlatDetail({
             {flat.neighborhood} · {flat.city} · PB
           </p>
         </div>
-        <div className="detail-favorite">
-          <FavoriteButton slug={flat.slug} />
+        <div className="detail-actions">
+          <ShareButton title={flat.title} />
+          <div className="detail-favorite">
+            <FavoriteButton slug={flat.slug} />
+          </div>
         </div>
       </div>
-      <Gallery images={flat.gallery} title={flat.title} />
+      <Gallery
+        images={flat.gallery}
+        title={flat.title}
+        realPhotos={flat.realPhotos}
+      />
       <div className="detail-layout">
         <div>
           <div className="detail-facts">

@@ -38,7 +38,11 @@ export default async function BookingPage({
             <div className="photo-frame">
               <Photo
                 src={flat.coverImage}
-                alt={`Sala ilustrativa de ${flat.title}`}
+                alt={
+                  flat.realPhotos
+                    ? `Foto de ${flat.title}`
+                    : `Sala ilustrativa de ${flat.title}`
+                }
                 sizes="(max-width: 700px) 100vw, 45vw"
               />
             </div>

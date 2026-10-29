@@ -49,11 +49,17 @@ export function FlatCard({
         <Link href={href} aria-label={`Ver ${flat.title}`}>
           <Photo
             src={flat.coverImage}
-            alt={`Sala ilustrativa do ${flat.title}`}
+            alt={
+              flat.realPhotos
+                ? `Foto do ${flat.title}`
+                : `Sala ilustrativa do ${flat.title}`
+            }
           />
         </Link>
         <span className="image-tag">{flat.tag}</span>
-        <span className="illustrative-tag">Imagem de ambientação</span>
+        {!flat.realPhotos && (
+          <span className="illustrative-tag">Imagem de ambientação</span>
+        )}
         <FavoriteButton slug={flat.slug} />
       </div>
       <div className="card-body">
