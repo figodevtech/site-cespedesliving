@@ -176,7 +176,6 @@ test("unconnected account and services do not expose fabricated records", async 
     "/api/demo-access",
     "/api/booking-requests",
     "/api/quote",
-    "/api/owner-leads",
   ]) {
     const response = await request.post(route, {
       data: {

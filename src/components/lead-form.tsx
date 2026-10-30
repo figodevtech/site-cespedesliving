@@ -13,24 +13,15 @@ export function LeadForm({ contact = false }: { contact?: boolean }) {
     <form
       className="lead-form stack-form"
       onChange={() => setPrepared(null)}
-      onSubmit={async (e) => {
+      onSubmit={(e) => {
         e.preventDefault();
-        const form = e.currentTarget;
-        const fd = new FormData(form);
+        const fd = new FormData(e.currentTarget);
         setError("");
         setPrepared(null);
         try {
           if (fd.get("website"))
             throw new Error("Não foi possível preparar a mensagem.");
-          if (!contact) {
-            const response = await fetch("/api/owner-leads", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(Object.fromEntries(fd)),
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error);
-          }
+          // Nada é gravado: a mensagem segue pelo WhatsApp da equipe.
           const link = contactLink(
             `${contact ? "Contato" : "Interesse em gestão de imóvel"} — Cespedes Living\nNome: ${fd.get("name")}\nE-mail: ${fd.get("email")}\nTelefone: ${fd.get("phone")}\n${contact ? "" : `Região: ${fd.get("neighborhood")}\n`}Mensagem: ${fd.get("message") ?? ""}`,
           );

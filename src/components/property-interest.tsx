@@ -1,55 +1,62 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import type { Flat } from "@/domain/types";
 import { today } from "@/domain/dates";
+import { modalities, modalityLabels } from "@/domain/property";
+import { contactLink } from "@/lib/contact";
+/**
+ * Interesse em aluguel ou venda e pedido de visita. Nada é gravado: a mensagem
+ * sai pronta para o WhatsApp da equipe, com o imóvel e o link da página.
+ */
 export function PropertyInterest({ flat }: { flat: Flat }) {
+  const options = modalities(flat).filter((m) => m !== "TEMPORADA");
   const [visit, setVisit] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [prepared, setPrepared] =
+    useState<ReturnType<typeof contactLink>>(null);
+  const channel = contactLink(`Olá! Tenho interesse no imóvel ${flat.title}.`);
   return (
     <form
       className="booking-widget stack-form"
-      onSubmit={async (event) => {
+      onChange={() => setPrepared(null)}
+      onSubmit={(event) => {
         event.preventDefault();
-        setBusy(true);
         setError("");
-        setMessage("");
-        const fields = new FormData(event.currentTarget);
-        try {
-          const response = await fetch(
-            visit ? "/api/property-visits" : "/api/property-leads",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                ...Object.fromEntries(fields),
-                imovelId: flat.id,
-                ...(visit
-                  ? {
-                      desiredAt: new Date(
-                        String(fields.get("desiredAt")),
-                      ).toISOString(),
-                    }
-                  : {}),
-              }),
-            },
-          );
-          const result = await response.json();
-          if (!response.ok) throw new Error(result.error);
-          setMessage(
+        setPrepared(null);
+        const fd = new FormData(event.currentTarget);
+        const modality = String(fd.get("modality") ?? "");
+        const desired = String(fd.get("desiredAt") ?? "");
+        const when = desired
+          ? new Date(desired).toLocaleString("pt-BR", {
+              dateStyle: "short",
+              timeStyle: "short",
+            })
+          : "";
+        const message = String(fd.get("message") ?? "").trim();
+        const link = contactLink(
+          [
             visit
-              ? "Solicitação de visita registrada. A equipe confirmará o horário."
-              : "Seu interesse foi registrado. A equipe entrará em contato.",
-          );
-        } catch (err) {
+              ? `Olá! Gostaria de agendar uma visita ao imóvel ${flat.title}.`
+              : `Olá! Tenho interesse no imóvel ${flat.title}.`,
+            modality
+              ? `Interesse: ${modalityLabels[modality as keyof typeof modalityLabels] ?? modality}`
+              : "",
+            visit && when ? `Data e horário desejados: ${when}` : "",
+            `Nome: ${fd.get("name")}`,
+            message ? `Mensagem: ${message}` : "",
+            window.location.href,
+          ]
+            .filter(Boolean)
+            .join("\n"),
+        );
+        if (!link) {
           setError(
-            err instanceof Error ? err.message : "Não foi possível registrar.",
+            "O atendimento online ainda não está disponível. Tente novamente mais tarde.",
           );
-        } finally {
-          setBusy(false);
+          return;
         }
+        setPrepared(link);
       }}
     >
       <h2>Conheça este imóvel</h2>
@@ -60,20 +67,27 @@ export function PropertyInterest({ flat }: { flat: Flat }) {
           onChange={(event) => setVisit(event.target.value === "visit")}
         >
           <option value="lead">Tenho interesse</option>
-          <option value="visit">Solicitar visita</option>
+          <option value="visit">Agendar visita</option>
         </select>
       </label>
+      {options.length > 1 && (
+        <label className="field">
+          Interesse em
+          <select name="modality" defaultValue={options[0]}>
+            {options.map((m) => (
+              <option key={m} value={m}>
+                {modalityLabels[m]}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      {options.length === 1 && (
+        <input type="hidden" name="modality" value={options[0]} />
+      )}
       <label className="field">
         Nome
         <input name="name" required maxLength={120} autoComplete="name" />
-      </label>
-      <label className="field">
-        E-mail
-        <input name="email" type="email" required autoComplete="email" />
-      </label>
-      <label className="field">
-        Telefone
-        <input name="phone" type="tel" required autoComplete="tel" />
       </label>
       {visit && (
         <label className="field">
@@ -84,39 +98,47 @@ export function PropertyInterest({ flat }: { flat: Flat }) {
             min={`${today()}T00:00`}
             required
           />
-          <small>
-            Horário local. A visita depende da confirmação da equipe.
-          </small>
+          <small>A visita depende da confirmação da equipe.</small>
         </label>
       )}
       <label className="field">
         Mensagem
         <textarea name="message" maxLength={2000} />
       </label>
-      <label className="checkbox-label">
-        <input type="checkbox" required />
-        <span>
-          Li a{" "}
-          <Link href="/politica-de-privacidade">política de privacidade</Link>.
-        </span>
-      </label>
       {error && (
         <p role="alert" className="form-error">
           {error}
         </p>
       )}
-      {message && (
-        <p role="status" className="notice">
-          {message}
+      {prepared && (
+        <div className="notice success-message" role="status">
+          <div>
+            <p>
+              Sua mensagem está pronta. Continue no canal de atendimento para
+              enviá-la.
+            </p>
+            <a
+              className="button"
+              href={prepared.href}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {prepared.label}
+              <ArrowRight size={17} />
+            </a>
+          </div>
+        </div>
+      )}
+      {channel ? (
+        <button className="button">
+          {visit ? "Preparar pedido de visita" : "Preparar mensagem"}
+          <ArrowRight size={17} />
+        </button>
+      ) : (
+        <p className="notice">
+          O atendimento online ainda não está disponível.
         </p>
       )}
-      <button className="button" disabled={busy}>
-        {busy
-          ? "Enviando…"
-          : visit
-            ? "Solicitar visita"
-            : "Registrar interesse"}
-      </button>
     </form>
   );
 }

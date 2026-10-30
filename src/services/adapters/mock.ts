@@ -82,13 +82,6 @@ export const mockAdapter: DataAdapter = {
   async demoAccess(input) {
     return { ...input, demo: true };
   },
-  async createLead(input) {
-    if (input.website)
-      throw new Error("Não foi possível registrar o formulário.");
-    if (!input.name.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email))
-      throw new Error("Confira seu nome e e-mail.");
-    return { id: `DEMO-${crypto.randomUUID().slice(0, 8)}`, demo: true };
-  },
   async dashboard() {
     return {
       occupancy: 78,

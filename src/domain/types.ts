@@ -97,14 +97,6 @@ export type DemoProfile = {
   role: "guest" | "owner";
   demo: true;
 };
-export type LeadInput = {
-  name: string;
-  email: string;
-  phone: string;
-  neighborhood: string;
-  message: string;
-  website?: string;
-};
 export type OwnerDashboard = {
   occupancy: number;
   revenue: number;

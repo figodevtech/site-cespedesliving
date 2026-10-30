@@ -73,12 +73,6 @@ export const apiAdapter: DataAdapter = {
       await sessionToken(),
     );
   },
-  createLead(input) {
-    return request("/public/owner-leads", {
-      method: "POST",
-      body: JSON.stringify(input),
-    });
-  },
   async demoAccess() {
     throw new Error(
       "O acesso real será disponibilizado após a integração segura de autenticação.",
