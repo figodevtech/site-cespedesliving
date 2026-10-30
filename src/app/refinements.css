@@ -815,6 +815,10 @@ main {
   color: #58636b;
   line-height: 1.7;
 }
+.account-link.signed-in svg {
+  margin-right: 6px;
+  vertical-align: -2px;
+}
 .resend-confirmation {
   display: grid;
   justify-items: start;

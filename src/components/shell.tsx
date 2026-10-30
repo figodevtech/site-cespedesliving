@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { Heart, Menu, X, ArrowUpRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Heart, Menu, X, ArrowUpRight, UserRound } from "lucide-react";
 import { useDemoValue } from "./demo-hook";
 import { contactLink, contactPhoneLabel } from "@/lib/contact";
 import { Brand } from "./brand";
@@ -14,10 +14,43 @@ const navigation = [
   ["Sobre", "/sobre"],
   ["Contato", "/contato"],
 ];
+type Account = { firstName: string | null; role: "guest" | "owner" } | null;
+/** Rechecado a cada troca de página: login e saída acontecem no servidor. */
+function useAccount(path: string) {
+  const [account, setAccount] = useState<Account>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/auth/session", { cache: "no-store", signal: controller.signal })
+      .then((response) => response.json())
+      .then((session) =>
+        setAccount(
+          session?.signedIn
+            ? { firstName: session.firstName ?? null, role: session.role }
+            : null,
+        ),
+      )
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, [path]);
+  return account;
+}
 export function Header() {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const favorites = useDemoValue<string[]>("favorites", []);
+  const account = useAccount(path);
+  const accountHref = account
+    ? account.role === "owner"
+      ? "/painel-proprietario"
+      : "/minha-conta"
+    : "/entrar";
+  const accountLabel = account
+    ? account.firstName
+      ? `Olá, ${account.firstName}`
+      : account.role === "owner"
+        ? "Meu painel"
+        : "Minha conta"
+    : "Entrar";
   return (
     <>
       <header className="site-header">
@@ -46,8 +79,13 @@ export function Header() {
                 <span className="heart-count">{favorites.length}</span>
               )}
             </Link>
-            <Link href="/entrar" className="button button-sm account-link">
-              Minha conta
+            <Link
+              href={accountHref}
+              className={`button button-sm account-link ${account ? "signed-in" : ""}`}
+              aria-label={account ? `${accountLabel} — acessar minha área` : "Entrar na minha conta"}
+            >
+              {account && <UserRound size={15} aria-hidden="true" />}
+              {accountLabel}
             </Link>
             <button
               type="button"
@@ -77,8 +115,8 @@ export function Header() {
           <Link href="/favoritos" onClick={() => setOpen(false)}>
             Favoritos
           </Link>
-          <Link href="/entrar" onClick={() => setOpen(false)}>
-            Minha conta
+          <Link href={accountHref} onClick={() => setOpen(false)}>
+            {account ? accountLabel : "Entrar / Minha conta"}
           </Link>
         </nav>
       </header>

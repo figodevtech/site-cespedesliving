@@ -3,7 +3,21 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "./supabase/server";
 import { ApiError, erpRequest } from "./erp";
+import { safeNext } from "./auth-validation";
 import type { SiteProfile } from "@/domain/types";
+/**
+ * Login e cadastro não servem a quem já entrou: segue para o destino pedido ou
+ * para a própria área. Conta pendente ou sem sessão continua vendo o formulário.
+ */
+export async function redirectIfSignedIn(next?: string) {
+  const profile = await siteProfile().catch(() => null);
+  if (!profile) return;
+  redirect(
+    profile.role === "owner"
+      ? "/painel-proprietario"
+      : safeNext(next ?? null),
+  );
+}
 export const sessionToken = cache(async () => {
   const client = await createClient();
   const {
