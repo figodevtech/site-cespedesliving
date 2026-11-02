@@ -1,4 +1,5 @@
 import "server-only";
+import { headers } from "next/headers";
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -25,6 +26,7 @@ export async function erpRequest<T>(
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(await visitorHeaders()),
       ...init?.headers,
     },
     signal: AbortSignal.timeout(15000),
@@ -39,6 +41,25 @@ export async function erpRequest<T>(
       body.code,
     );
   return body as T;
+}
+/**
+ * Quem chama o ERP é este servidor, então para o ERP todo visitante teria o mesmo IP e o limite de
+ * consultas valeria para o site inteiro. Repassa o IP do visitante com o segredo compartilhado
+ * (ERP_API_SECRET aqui = SITE_API_SECRET no ERP); sem segredo, não envia nada.
+ */
+async function visitorHeaders(): Promise<Record<string, string>> {
+  const secret = process.env.ERP_API_SECRET;
+  if (!secret) return {};
+  try {
+    const incoming = await headers();
+    const ip =
+      incoming.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      incoming.get("x-real-ip")?.trim();
+    return ip ? { "x-site-secret": secret, "x-site-client-ip": ip } : {};
+  } catch {
+    // Fora de uma requisição (build, tarefa agendada): sem visitante a repassar.
+    return {};
+  }
 }
 export function assertSameOrigin(request: Request) {
   const origin = request.headers.get("origin");

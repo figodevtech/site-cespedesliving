@@ -15,3 +15,15 @@
 .dashboard th, .dashboard td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
 .search-shell { flex-wrap: wrap; }
 @media(max-width: 700px) { .account-grid { grid-template-columns: 1fr; } .portal-filters { display: grid; grid-template-columns: 1fr; } .dashboard-panel { padding: 20px; } }
+
+/* Agenda do imóvel no quadro de reserva */
+.agenda-notes { display: grid; gap: 12px; margin: 18px 0 4px; font-size: 0.74rem; color: #48545c; }
+.agenda-notes h3 { font-family: var(--body); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #58636b; margin: 0 0 7px; }
+.agenda-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.agenda-chips li { padding: 4px 10px; border-radius: 999px; background: #f1f2f1; color: #35424a; font-size: 0.72rem; }
+.agenda-chips li.is-hit { background: #f3e1df; color: #8c2f25; }
+.agenda-package { padding: 10px 12px; border: 1px solid #e5d8bb; border-radius: 8px; background: #faf7ee; color: #645233; line-height: 1.5; }
+.agenda-package + .agenda-package { margin-top: 6px; }
+.agenda-package strong { color: #4b3c22; }
+.agenda-package.is-hit { border-color: #d9a441; box-shadow: 0 0 0 2px #d9a44133; }
+.agenda-more { color: #58636b; font-size: 0.7rem; }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { modalities } from "@/domain/property";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getFlat } from "@/services/flats";
+import { getFlat, getFlatAgenda } from "@/services/flats";
 import { isMock } from "@/services/adapter";
 import { PageHero, Photo } from "@/components/ui";
 import { BookingForm } from "@/components/booking-form";
@@ -72,6 +72,7 @@ export default async function BookingPage({
             checkout
             customer={customer}
             initial={await searchParams}
+            agenda={await getFlatAgenda(flat.id)}
           />
         )}
       </div>

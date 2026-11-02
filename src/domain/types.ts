@@ -14,6 +14,8 @@ export type Flat = {
   neighborhood: string;
   city: string;
   state: string;
+  /** Texto livre do ERP: distâncias e referências da região (nunca rua ou número). */
+  locationDetails?: string;
   modalities?: Modality[];
   prices?: {
     nightly?: number | null;
@@ -58,6 +60,11 @@ export type ReservationQuote = {
   currency: "BRL";
   expiresAt?: string;
   quoteId?: string;
+};
+/** Agenda pública do imóvel, para avisar antes de escolher as datas (fim = dia de saída). */
+export type FlatAgenda = {
+  unavailable: { start: string; end: string }[];
+  packages: { name: string; start: string; end: string; minNights: number }[];
 };
 export type Filters = {
   modality?: Modality;

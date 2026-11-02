@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getFlatsPage } from "@/services/flats";
+import { getAmenityOptions, getFlatsPage } from "@/services/flats";
 import { PageHero, EmptyState } from "@/components/ui";
 import { FlatCard } from "@/components/flat-card";
 import { SearchForm } from "@/components/search-form";
 import { validateStay } from "@/domain/dates";
 import type { Filters, Modality, Flat } from "@/domain/types";
 import { isMock } from "@/services/adapter";
+import { pricesVisibleFor } from "@/domain/property";
 export const metadata: Metadata = {
   title: "Nossos imóveis",
   description:
@@ -22,6 +23,8 @@ export default async function FlatsPage({
   Object.entries(raw).forEach(([k, v]) => {
     if (typeof v === "string") params[k] = v;
   });
+  // Em paralelo com a busca dos imóveis; nunca rejeita (sem opções, o filtro some).
+  const amenityOptions = getAmenityOptions();
   let error = "";
   let flats: Flat[] = [];
   let total = 0;
@@ -60,11 +63,15 @@ export default async function FlatsPage({
         isMock() || modality !== "TEMPORADA" ? undefined : params.checkin,
       checkout:
         isMock() || modality !== "TEMPORADA" ? undefined : params.checkout,
-      minPrice: isMock() ? undefined : minPrice,
-      maxPrice: isMock() ? undefined : maxPrice,
+      // Link antigo com faixa de valor de aluguel/venda: o site não mostra esses valores, ignora.
+      minPrice: isMock() || !pricesVisibleFor(modality as Modality) ? undefined : minPrice,
+      maxPrice: isMock() || !pricesVisibleFor(modality as Modality) ? undefined : maxPrice,
       amenities: params.amenity ? [params.amenity] : [],
       sort:
-        isMock() && params.sort?.startsWith("price-") ? undefined : params.sort,
+        (isMock() || !pricesVisibleFor(modality as Modality)) &&
+        params.sort?.startsWith("price-")
+          ? undefined
+          : params.sort,
     };
     const result = await getFlatsPage(filters, page, pageSize);
     flats = result.items;
@@ -104,6 +111,7 @@ export default async function FlatsPage({
             compact
             initial={params}
             showPrices={!isMock()}
+            amenities={await amenityOptions}
           />
           <div className="catalog-bar">
             <div className="chips">

@@ -1,6 +1,7 @@
 import { mockFlats } from "@/data/flats";
 import { calculateQuote } from "@/domain/pricing";
 import type { DataAdapter } from "../contracts";
+import { amenityKey } from "@/domain/amenities";
 export const mockAdapter: DataAdapter = {
   async listFlats(filters = {}) {
     let result = mockFlats.filter((f) => f.active && f.published);
@@ -14,7 +15,9 @@ export const mockAdapter: DataAdapter = {
       result = result.filter((f) => f.fromPrice <= filters.maxPrice!);
     if (filters.amenities?.length)
       result = result.filter((f) =>
-        filters.amenities!.every((a) => f.amenities.includes(a)),
+        filters.amenities!.every((a) =>
+          f.amenities.some((x) => amenityKey(x) === amenityKey(a)),
+        ),
       );
     if (filters.checkin && filters.checkout) {
       result = result.filter(

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { addDays, today, validateStay } from "@/domain/dates";
 import type { Modality } from "@/domain/types";
+import { amenityKey, type AmenityOption } from "@/domain/amenities";
+import { pricesVisibleFor } from "@/domain/property";
 import { DateInput } from "./date-input";
 export const neighborhoods = [
   "Tambaú",
@@ -17,16 +19,31 @@ export function SearchForm({
   compact = false,
   initial = {},
   showPrices = false,
+  amenities = [],
 }: {
   compact?: boolean;
   initial?: Record<string, string>;
   showPrices?: boolean;
+  /** Comodidades dos imóveis publicados, como cadastradas no ERP. */
+  amenities?: AmenityOption[];
 }) {
   const router = useRouter();
+  // Link antigo ou digitado ("wi-fi") marca a opção equivalente; sem equivalente, a opção é mantida.
+  const wanted = initial.amenity ?? "";
+  const matched = wanted
+    ? amenities.find((a) => amenityKey(a.name) === amenityKey(wanted))
+    : undefined;
+  const selectedAmenity = matched?.name ?? wanted;
+  const amenityChoices = [
+    ...amenities.map((a) => a.name),
+    ...(selectedAmenity && !matched ? [selectedAmenity] : []),
+  ];
   const [error, setError] = useState("");
   const [modality, setModality] = useState<Modality>(
     (initial.modality as Modality) ?? "TEMPORADA",
   );
+  // Só a diária aparece no site por enquanto: sem filtro/ordenação por valores ocultos.
+  const pricesVisible = showPrices && pricesVisibleFor(modality);
   return (
     <form
       className={compact ? "catalog-filter" : "search-shell"}
@@ -127,7 +144,7 @@ export function SearchForm({
       )}
       {compact && (
         <>
-          {showPrices && (
+          {pricesVisible && (
             <>
               <div className="field">
                 <label htmlFor="min-price">Valor mínimo (R$)</label>
@@ -155,29 +172,26 @@ export function SearchForm({
               </div>
             </>
           )}
-          <div className="field">
-            <label htmlFor="amenity">Facilidade</label>
-            <select
-              id="amenity"
-              name="amenity"
-              defaultValue={initial.amenity ?? ""}
-            >
-              <option value="">Todas as facilidades</option>
-              {[
-                "Estacionamento",
-                "Piscina compartilhada",
-                "Espaço de trabalho",
-                "Varanda",
-              ].map((a) => (
-                <option key={a}>{a}</option>
-              ))}
-            </select>
-          </div>
+          {amenityChoices.length ? (
+            <div className="field">
+              <label htmlFor="amenity">Facilidade</label>
+              <select
+                id="amenity"
+                name="amenity"
+                defaultValue={selectedAmenity}
+              >
+                <option value="">Todas as facilidades</option>
+                {amenityChoices.map((a) => (
+                  <option key={a}>{a}</option>
+                ))}
+              </select>
+            </div>
+          ) : null}
           <div className="field">
             <label htmlFor="sort">Ordenar por</label>
             <select id="sort" name="sort" defaultValue={initial.sort ?? ""}>
               <option value="">Relevância</option>
-              {showPrices && (
+              {pricesVisible && (
                 <>
                   <option value="price-asc">Menor preço</option>
                   <option value="price-desc">Maior preço</option>

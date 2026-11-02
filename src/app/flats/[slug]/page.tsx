@@ -13,7 +13,7 @@ import {
 import { PropertyInterest } from "@/components/property-interest";
 import { modalities, modalityLabels, propertyPrice } from "@/domain/property";
 import { money } from "@/domain/dates";
-import { getFlat } from "@/services/flats";
+import { getFlat, getFlatAgenda } from "@/services/flats";
 import { isMock } from "@/services/adapter";
 import { Gallery } from "@/components/gallery";
 import { BookingForm } from "@/components/booking-form";
@@ -82,7 +82,7 @@ export default async function FlatDetail({
           <h1>{flat.title}</h1>
           <p className="card-location">
             <MapPin size={16} />
-            {flat.neighborhood} · {flat.city} · PB
+            {[flat.neighborhood, flat.city, flat.state].filter(Boolean).join(" · ")}
           </p>
         </div>
         <div className="detail-actions">
@@ -138,12 +138,16 @@ export default async function FlatDetail({
           </section>
           <section className="detail-section">
             <h2>Seu entorno</h2>
-            <p>
-              Na região de {flat.neighborhood}, em {flat.city}, a proposta é
-              estar perto da vida local: gastronomia, serviços e passeios pelo
-              litoral. As distâncias e o endereço exato serão confirmados no
-              catálogo oficial.
-            </p>
+            {flat.locationDetails ? (
+              <p>{flat.locationDetails}</p>
+            ) : (
+              <p>
+                Na região de {flat.neighborhood}, em {flat.city}, a proposta é
+                estar perto da vida local: gastronomia, serviços e passeios pelo
+                litoral. As distâncias e o endereço exato serão confirmados no
+                catálogo oficial.
+              </p>
+            )}
             <Link
               className="text-link"
               href={`/flats?neighborhood=${encodeURIComponent(flat.neighborhood)}`}
@@ -181,7 +185,11 @@ export default async function FlatDetail({
           {modalities(flat).includes("TEMPORADA") ? isMock() ? (
             <InquiryForm flat={flat} initial={await searchParams} />
           ) : (
-            <BookingForm flat={flat} initial={await searchParams} />
+            <BookingForm
+              flat={flat}
+              initial={await searchParams}
+              agenda={await getFlatAgenda(flat.id)}
+            />
           ) : null}
           {modalities(flat).some(m => m !== "TEMPORADA") && <PropertyInterest flat={flat}/>}
         </aside>

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CalendarCheck, ShieldCheck } from "lucide-react";
-import type { Booking, Flat, ReservationQuote } from "@/domain/types";
+import type { Booking, Flat, FlatAgenda, ReservationQuote } from "@/domain/types";
 import {
   addDays,
   formatDate,
@@ -14,13 +14,17 @@ import {
 import { post } from "@/lib/http";
 import { useHydrated } from "./demo-hook";
 import { DateInput } from "./date-input";
+import { AgendaNotes } from "./agenda-notes";
 export function BookingForm({
   flat,
   checkout = false,
   customer = null,
   initial = {},
+  agenda = null,
 }: {
   flat: Flat;
+  /** Períodos sem vaga e pacotes fechados, para o hóspede saber antes de escolher. */
+  agenda?: FlatAgenda | null;
   checkout?: boolean;
   /** Cliente com sessão ativa; sem ele, confirmar leva ao login guardando a estadia. */
   customer?: { name: string; email: string } | null;
@@ -214,6 +218,13 @@ export function BookingForm({
           </select>
         </div>
       </fieldset>
+      {agenda ? (
+        <AgendaNotes
+          agenda={agenda}
+          checkin={dates.checkin}
+          checkout={dates.checkout}
+        />
+      ) : null}
       {checkout && (
         <fieldset className="guest-fields">
           <legend>

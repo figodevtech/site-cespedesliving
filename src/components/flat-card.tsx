@@ -9,6 +9,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import type { Flat, Modality } from "@/domain/types";
+import { hasWifi } from "@/domain/amenities";
 import { propertyPrice, modalities, modalityLabels } from "@/domain/property";
 import { money } from "@/domain/dates";
 import { writeDemo } from "@/lib/demo-storage";
@@ -90,7 +91,7 @@ export function FlatCard({
           </span>
           <span>
             <Wifi size={15} />
-            {flat.amenities.includes("Wi-Fi") ? "Wi-Fi" : `${flat.areaSqm} m²`}
+            {hasWifi(flat.amenities) ? "Wi-Fi" : `${flat.areaSqm} m²`}
           </span>
         </div>
         <div className="card-footer">

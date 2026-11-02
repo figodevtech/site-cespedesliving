@@ -1,6 +1,7 @@
 import "server-only";
 import type { DataAdapter } from "../contracts";
 import type { Flat } from "@/domain/types";
+import { ONLY_NIGHTLY_PRICE } from "@/domain/property";
 import { ApiError, erpRequest as request } from "@/lib/erp";
 import { sessionToken } from "@/lib/site-session";
 export function publicFlat(f: Flat): Flat {
@@ -12,6 +13,7 @@ export function publicFlat(f: Flat): Flat {
     neighborhood: f.neighborhood,
     city: f.city,
     state: f.state,
+    locationDetails: f.locationDetails ?? "",
     description: f.description,
     coverImage: f.coverImage,
     gallery: f.gallery,
@@ -31,7 +33,10 @@ export function publicFlat(f: Flat): Flat {
     fromPrice: f.fromPrice,
     tag: f.tag,
     modalities: f.modalities,
-    prices: f.prices,
+    // Valores que o site não mostra também não vão para o navegador (ver ONLY_NIGHTLY_PRICE).
+    prices: ONLY_NIGHTLY_PRICE
+      ? { nightly: f.prices?.nightly ?? null }
+      : f.prices,
     occupancyStatus: f.occupancyStatus,
   };
 }
@@ -39,7 +44,11 @@ export const apiAdapter: DataAdapter = {
   async listFlats(filters = {}) {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined)
+      if (value === undefined) return;
+      // Uma comodidade por parâmetro: o nome pode ter vírgula.
+      if (key === "amenities" && Array.isArray(value))
+        value.forEach((amenity) => params.append("amenity", amenity));
+      else
         params.set(key, Array.isArray(value) ? value.join(",") : String(value));
     });
     const result = await request<{ items: Flat[] }>(
