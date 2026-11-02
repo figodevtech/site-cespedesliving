@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { pickRange } from "./date-picker";
+import { chooseOption } from "./select";
 const year = new Date().getFullYear() + 1;
 const checkin = year + "-01-03";
 const checkout = year + "-01-06";
@@ -12,16 +14,17 @@ test("search and stay inquiry prepare the official WhatsApp message", async ({
   });
   await page.goto("/");
   const form = page.getByRole("form", { name: "Buscar hospedagem" });
-  await form.getByLabel("Destino").selectOption("Tambaú");
-  await form.getByLabel("Entrada").fill(checkin);
-  await form.getByLabel("Saída").fill(checkout);
+  // Destino agora é cidade - UF, só das cidades com imóvel publicado.
+  await chooseOption(page, form.getByLabel("Destino"), "João Pessoa - PB");
+  await pickRange(page, form.getByLabel("Entrada e saída"), checkin, checkout);
   await form.getByRole("button", { name: "Buscar flats" }).click();
-  await expect(page.getByText("1 flat encontrado")).toBeVisible();
+  await expect(page.getByText(/d+ flats? encontrados?/)).toBeVisible();
   await page
     .getByRole("heading", { name: "Flat Tambaú Master" })
     .getByRole("link")
     .click();
-  await expect(page.getByLabel("Entrada", { exact: true })).toHaveValue(
+  await expect(page.getByLabel("Entrada e saída", { exact: true })).toHaveAttribute(
+    "data-start",
     checkin,
   );
   await page.getByRole("button", { name: "Consultar disponibilidade" }).click();
@@ -78,8 +81,9 @@ test("catalog filters work without invented rates or blocked dates", async ({
   await expect(page.locator(".card-price").first()).toContainText(
     "Tarifa sob consulta",
   );
-  await page.getByLabel("Destino").selectOption("Tambaú");
-  await page.getByLabel("Facilidade").selectOption("Estacionamento");
+  // Cabedelo tem um só imóvel, sem varanda: a busca não encontra nada.
+  await chooseOption(page, page.getByLabel("Destino"), "Cabedelo - PB");
+  await chooseOption(page, page.getByLabel("Facilidade"), "Varanda");
   await page.getByRole("button", { name: "Buscar flats" }).click();
   await expect(
     page.getByRole("heading", { name: "Vamos encontrar outro momento?" }),
@@ -112,7 +116,7 @@ test("owner and contact forms prepare messages instead of claiming delivery", as
   await page.getByLabel("Seu nome").fill("Visitante Teste");
   await page.getByLabel("E-mail", { exact: true }).fill("teste@example.com");
   await page.getByLabel("Telefone com DDD").fill("83999999999");
-  await page.getByLabel("Região do imóvel").selectOption("Manaíra");
+  await chooseOption(page, page.getByLabel("Região do imóvel"), "Manaíra");
   await page.getByRole("checkbox").check();
   await page
     .getByRole("button", { name: "Quero ser parceiro", exact: true })

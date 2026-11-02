@@ -13,7 +13,8 @@ import {
 } from "@/domain/dates";
 import { post } from "@/lib/http";
 import { useHydrated } from "./demo-hook";
-import { DateInput } from "./date-input";
+import { DateRangePicker } from "./date-picker";
+import { Select } from "./select";
 import { AgendaNotes } from "./agenda-notes";
 export function BookingForm({
   flat,
@@ -45,12 +46,6 @@ export function BookingForm({
   const [sending, setSending] = useState(false);
   const [quoteRevision, setQuoteRevision] = useState(0);
   const loginHref = `/entrar?next=${encodeURIComponent(`/reservar/${flat.slug}?${new URLSearchParams({ ...dates, guests: String(dates.guests) })}`)}`;
-  let minimumCheckout = today();
-  try {
-    if (dates.checkin) minimumCheckout = addDays(dates.checkin, 1);
-  } catch {
-    /* The quote error describes malformed URL dates. */
-  }
   useEffect(() => {
     const controller = new AbortController();
     const current = ++sequence.current;
@@ -101,6 +96,31 @@ export function BookingForm({
     flat.maxNights,
     quoteRevision,
   ]);
+  // Agenda do imóvel no calendário: noite sem vaga não é entrada, e a saída não atravessa período ocupado.
+  const taken = agenda?.unavailable ?? [];
+  const nightTaken = (day: string) =>
+    taken.some((range) => range.start <= day && day < range.end);
+  const crossesTaken = (from: string, to: string) =>
+    taken.some((range) => range.start < to && range.end > from);
+  const packageMark = (day: string) => {
+    const pack = agenda?.packages.find(
+      (p) => p.start <= day && day < p.end,
+    );
+    return pack ? `pacote fechado: ${pack.name}` : null;
+  };
+  const legend =
+    taken.length || agenda?.packages.length ? (
+      <>
+        {taken.length ? (
+          <span>
+            <span className="legend-off">15</span> sem vaga
+          </span>
+        ) : null}
+        {agenda?.packages.length ? (
+          <span className="legend-mark">pacote fechado</span>
+        ) : null}
+      </>
+    ) : undefined;
   function changeDate(key: "checkin" | "checkout" | "guests", value: string) {
     sequence.current++;
     setLoading(true);
@@ -180,42 +200,37 @@ export function BookingForm({
         </div>
       </div>
       <fieldset className="form-grid stay-dates" disabled={!hydrated}>
-        <div className="field date-field">
-          <label htmlFor="booking-checkin">Entrada</label>
-          <DateInput
-            id="booking-checkin"
-            name="checkin"
+        <div className="field date-field span-2">
+          <label htmlFor="booking-dates">Entrada e saída</label>
+          <DateRangePicker
+            id="booking-dates"
+            startName="checkin"
+            endName="checkout"
             min={today()}
             required
-            value={dates.checkin}
-            onChange={(e) => changeDate("checkin", e.target.value)}
-          />
-        </div>
-        <div className="field date-field">
-          <label htmlFor="booking-checkout">Saída</label>
-          <DateInput
-            id="booking-checkout"
-            name="checkout"
-            min={minimumCheckout}
-            required
-            value={dates.checkout}
-            onChange={(e) => changeDate("checkout", e.target.value)}
+            value={{ start: dates.checkin, end: dates.checkout }}
+            isStartDisabled={nightTaken}
+            isEndDisabled={crossesTaken}
+            markOf={packageMark}
+            legend={legend}
+            onChange={({ start, end }) => {
+              changeDate("checkin", start);
+              changeDate("checkout", end);
+            }}
           />
         </div>
         <div className="field span-2">
           <label htmlFor="booking-guests">Hóspedes</label>
-          <select
+          <Select
             id="booking-guests"
             name="guests"
-            value={dates.guests}
-            onChange={(e) => changeDate("guests", e.target.value)}
-          >
-            {Array.from({ length: flat.maxGuests }, (_, i) => (
-              <option value={i + 1} key={i}>
-                {i + 1} hóspede{i > 0 ? "s" : ""}
-              </option>
-            ))}
-          </select>
+            value={String(dates.guests)}
+            onChange={(value) => changeDate("guests", value)}
+            options={Array.from({ length: flat.maxGuests }, (_, i) => ({
+              value: String(i + 1),
+              label: `${i + 1} hóspede${i > 0 ? "s" : ""}`,
+            }))}
+          />
         </div>
       </fieldset>
       {agenda ? (

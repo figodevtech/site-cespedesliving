@@ -5,7 +5,7 @@ import {
   ShieldCheck,
   Check,
 } from "lucide-react";
-import { getFlats } from "@/services/flats";
+import { getDestinations, getFlats } from "@/services/flats";
 import { FlatCard } from "@/components/flat-card";
 import { ButtonLink, Photo } from "@/components/ui";
 import { SearchForm } from "@/components/search-form";
@@ -49,7 +49,7 @@ export default async function Home() {
         </div>
         <div className="hero-bottom">
           <div className="container">
-            <SearchForm />
+            <SearchForm destinations={await getDestinations()} />
           </div>
         </div>
       </section>

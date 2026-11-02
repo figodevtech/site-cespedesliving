@@ -10,6 +10,7 @@ import {
 import type { OwnerDashboard } from "@/domain/types";
 import { money } from "@/domain/dates";
 import { Notice } from "./ui";
+import { Select } from "./select";
 export function OwnerDashboardView({ data }: { data: OwnerDashboard }) {
   const [period, setPeriod] = useState("atual");
   const factor = period === "anterior" ? 0.84 : 1;
@@ -32,14 +33,15 @@ export function OwnerDashboardView({ data }: { data: OwnerDashboard }) {
         </nav>
         <div className="field">
           <label htmlFor="dashboard-period">Período ilustrativo</label>
-          <select
+          <Select
             id="dashboard-period"
             value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-          >
-            <option value="atual">Cenário atual fictício</option>
-            <option value="anterior">Cenário anterior fictício</option>
-          </select>
+            onChange={setPeriod}
+            options={[
+              { value: "atual", label: "Cenário atual fictício" },
+              { value: "anterior", label: "Cenário anterior fictício" },
+            ]}
+          />
         </div>
       </div>
       <section id="indicadores" aria-label="Indicadores fictícios">

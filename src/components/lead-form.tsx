@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { contactLink } from "@/lib/contact";
 import { neighborhoods } from "./search-form";
+import { Select } from "./select";
 export function LeadForm({ contact = false }: { contact?: boolean }) {
   const [error, setError] = useState("");
   const [prepared, setPrepared] =
@@ -80,13 +81,13 @@ export function LeadForm({ contact = false }: { contact?: boolean }) {
         {!contact && (
           <div className="field span-2">
             <label htmlFor="lead-neighborhood">Região do imóvel</label>
-            <select id="lead-neighborhood" name="neighborhood" required>
-              <option value="">Selecione a região</option>
-              {neighborhoods.map((n) => (
-                <option key={n}>{n}</option>
-              ))}
-              <option>Outra região</option>
-            </select>
+            <Select
+              id="lead-neighborhood"
+              name="neighborhood"
+              required
+              placeholder="Selecione a região"
+              options={[...neighborhoods, "Outra região"].map((n) => ({ value: n, label: n }))}
+            />
           </div>
         )}
         <div className="field span-2">

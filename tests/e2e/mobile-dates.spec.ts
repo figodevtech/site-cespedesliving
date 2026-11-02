@@ -1,4 +1,6 @@
 import { test, expect } from "@playwright/test";
+import { clearRange, pickRange } from "./date-picker";
+import { chooseOption } from "./select";
 
 const year = new Date().getFullYear() + 1;
 const checkin = `${year}-01-03`;
@@ -18,22 +20,21 @@ test("date fields fit mobile screens with full and empty values", async ({
     await page.setViewportSize({ width, height: 900 });
     for (const route of routes) {
       await page.goto(route);
-      const fields = page.locator("input[type=date]");
-      await expect(fields).toHaveCount(2);
-      for (const [index, value] of [checkin, checkout].entries())
-        await fields.nth(index).fill(value);
+      // Campo de período do site (entrada e saída num campo só), não mais os dois nativos.
+      const fields = page.locator(".date-trigger");
+      await expect(fields).toHaveCount(1);
+      await pickRange(page, fields.first(), checkin, checkout);
       const snapshot = async () =>
-        page.locator(".date-control").evaluateAll((controls) =>
+        fields.evaluateAll((controls) =>
           controls.map((control) => {
-            const input = control.querySelector("input")!;
-            const bounds = input.getBoundingClientRect();
+            const text = control.querySelector("span")!.getBoundingClientRect();
             const wrapper = control.getBoundingClientRect();
             return {
-              left: bounds.left,
-              right: bounds.right,
-              width: bounds.width,
-              height: bounds.height,
-              font: parseFloat(getComputedStyle(input).fontSize),
+              left: text.left,
+              right: text.right,
+              width: wrapper.width,
+              height: wrapper.height,
+              font: parseFloat(getComputedStyle(control).fontSize),
               containerLeft: wrapper.left,
               containerRight: wrapper.right,
               containerHeight: wrapper.height,
@@ -54,13 +55,6 @@ test("date fields fit mobile screens with full and empty values", async ({
         ),
         route,
       ).toBe(true);
-      const boxes = await Promise.all([
-        fields.nth(0).boundingBox(),
-        fields.nth(1).boundingBox(),
-      ]);
-      expect(boxes[1]!.y).toBeGreaterThanOrEqual(
-        boxes[0]!.y + boxes[0]!.height,
-      );
       if (route === "/") {
         const copy = await page.locator(".hero-copy").boundingBox();
         const search = await page.locator(".search-shell").boundingBox();
@@ -79,7 +73,7 @@ test("date fields fit mobile screens with full and empty values", async ({
       if (width === 390) {
         // Leave room for the entire hero below the sticky header in captures.
         await page.setViewportSize({ width, height: 1400 });
-        await fields.nth(1).blur();
+        await fields.first().blur();
         await page.evaluate(() => window.scrollTo(0, 0));
         await area.screenshot({
           path: `docs/date-fields/${testInfo.project.name}-${route === "/" ? "home" : route === "/flats" ? "catalog" : route.startsWith("/reservar") ? "inquiry" : "detail"}.png`,
@@ -87,7 +81,13 @@ test("date fields fit mobile screens with full and empty values", async ({
         });
         await page.setViewportSize({ width, height: 900 });
       }
-      for (const input of await fields.all()) await input.fill("");
+      // Sem datas: na busca da home, "Limpar"; nos demais, a página aberta com as datas vazias.
+      if (route === "/") {
+        await clearRange(page, fields.first());
+      } else {
+        await page.goto(`${route}?checkin=&checkout=`);
+        await expect(fields.first()).toHaveAttribute("data-start", "");
+      }
       const empty = await snapshot();
       empty.forEach((input, index) =>
         expect(input.containerHeight).toBe(filled[index].containerHeight),
@@ -106,16 +106,16 @@ test("mobile date edits still reach search and the WhatsApp inquiry", async ({
 }) => {
   await page.goto("/");
   const search = page.getByRole("form", { name: "Buscar hospedagem" });
-  await search.getByLabel("Destino").selectOption("Tambaú");
-  await search.getByLabel("Entrada").fill(checkin);
-  await search.getByLabel("Saída").fill(checkout);
+  await chooseOption(page, search.getByLabel("Destino"), "João Pessoa - PB");
+  await pickRange(page, search.getByLabel("Entrada e saída"), checkin, checkout);
   await search.getByRole("button", { name: "Buscar flats" }).click();
   await expect(page).toHaveURL(new RegExp(`checkin=${checkin}`));
   await page
     .getByRole("heading", { name: "Flat Tambaú Master" })
     .getByRole("link")
     .click();
-  await expect(page.getByLabel("Entrada", { exact: true })).toHaveValue(
+  await expect(page.getByLabel("Entrada e saída", { exact: true })).toHaveAttribute(
+    "data-start",
     checkin,
   );
   await page.getByRole("button", { name: "Consultar disponibilidade" }).click();

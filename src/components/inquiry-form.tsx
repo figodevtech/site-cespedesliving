@@ -6,7 +6,8 @@ import type { Flat } from "@/domain/types";
 import { addDays, today, validateStay } from "@/domain/dates";
 import { contactLink } from "@/lib/contact";
 import { useHydrated } from "./demo-hook";
-import { DateInput } from "./date-input";
+import { DateRangePicker } from "./date-picker";
+import { Select } from "./select";
 export function InquiryForm({
   flat,
   initial = {},
@@ -19,6 +20,16 @@ export function InquiryForm({
   const [prepared, setPrepared] =
     useState<ReturnType<typeof contactLink>>(null);
   const channel = contactLink("Olá! Gostaria de consultar uma hospedagem.");
+  const [stay, setStay] = useState({
+    checkin: initial.checkin ?? addDays(today(), 3),
+    checkout: initial.checkout ?? addDays(today(), 6),
+  });
+  // O seletor não dispara o "change" do fieldset: limpa a mensagem pronta aqui.
+  const changeStay = (next: typeof stay) => {
+    setStay(next);
+    setPrepared(null);
+    setError("");
+  };
   return (
     <form
       className="booking-widget"
@@ -63,39 +74,33 @@ export function InquiryForm({
           setError("");
         }}
       >
-        <div className="field date-field">
-          <label htmlFor="inquiry-checkin">Entrada</label>
-          <DateInput
-            id="inquiry-checkin"
-            name="checkin"
+        <div className="field date-field span-2">
+          <label htmlFor="inquiry-dates">Entrada e saída</label>
+          <DateRangePicker
+            id="inquiry-dates"
+            startName="checkin"
+            endName="checkout"
             min={today()}
             required
-            defaultValue={initial.checkin ?? addDays(today(), 3)}
-          />
-        </div>
-        <div className="field date-field">
-          <label htmlFor="inquiry-checkout">Saída</label>
-          <DateInput
-            id="inquiry-checkout"
-            name="checkout"
-            min={addDays(today(), 1)}
-            required
-            defaultValue={initial.checkout ?? addDays(today(), 6)}
+            value={{ start: stay.checkin, end: stay.checkout }}
+            onChange={({ start, end }) => changeStay({ checkin: start, checkout: end })}
           />
         </div>
         <div className="field span-2">
           <label htmlFor="inquiry-guests">Hóspedes</label>
-          <select
-            name="guests"
+          <Select
             id="inquiry-guests"
+            name="guests"
             defaultValue={initial.guests ?? "2"}
-          >
-            {Array.from({ length: flat.maxGuests }, (_, i) => (
-              <option value={i + 1} key={i}>
-                {i + 1} hóspede{i ? "s" : ""}
-              </option>
-            ))}
-          </select>
+            onChange={() => {
+              setPrepared(null);
+              setError("");
+            }}
+            options={Array.from({ length: flat.maxGuests }, (_, i) => ({
+              value: String(i + 1),
+              label: `${i + 1} hóspede${i > 0 ? "s" : ""}`,
+            }))}
+          />
         </div>
       </fieldset>
       {error && (

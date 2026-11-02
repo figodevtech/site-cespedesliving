@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getAmenityOptions, getFlatsPage } from "@/services/flats";
+import { getAmenityOptions, getDestinations, getFlatsPage } from "@/services/flats";
+import { parseDestination } from "@/domain/destinations";
 import { PageHero, EmptyState } from "@/components/ui";
 import { FlatCard } from "@/components/flat-card";
 import { SearchForm } from "@/components/search-form";
@@ -25,6 +26,8 @@ export default async function FlatsPage({
   });
   // Em paralelo com a busca dos imóveis; nunca rejeita (sem opções, o filtro some).
   const amenityOptions = getAmenityOptions();
+  const destinationOptions = getDestinations();
+  const destination = parseDestination(params.destination);
   let error = "";
   let flats: Flat[] = [];
   let total = 0;
@@ -58,6 +61,8 @@ export default async function FlatsPage({
     const filters: Filters = {
       modality: modality as Modality,
       neighborhood: params.neighborhood,
+      city: destination?.city,
+      state: destination?.state,
       guests: modality === "TEMPORADA" ? guests : undefined,
       checkin:
         isMock() || modality !== "TEMPORADA" ? undefined : params.checkin,
@@ -83,6 +88,7 @@ export default async function FlatsPage({
   const labels: Record<string, string> = {
     modality: "Finalidade",
     neighborhood: "Bairro",
+    destination: "Destino",
     guests: "Hóspedes",
     checkin: "Entrada",
     checkout: "Saída",
@@ -112,6 +118,7 @@ export default async function FlatsPage({
             initial={params}
             showPrices={!isMock()}
             amenities={await amenityOptions}
+            destinations={await destinationOptions}
           />
           <div className="catalog-bar">
             <div className="chips">

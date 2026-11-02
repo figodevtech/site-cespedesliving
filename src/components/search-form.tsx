@@ -6,7 +6,9 @@ import { addDays, today, validateStay } from "@/domain/dates";
 import type { Modality } from "@/domain/types";
 import { amenityKey, type AmenityOption } from "@/domain/amenities";
 import { pricesVisibleFor } from "@/domain/property";
-import { DateInput } from "./date-input";
+import { destinationValue, type Destination } from "@/domain/destinations";
+import { DateRangePicker } from "./date-picker";
+import { Select } from "./select";
 export const neighborhoods = [
   "Tambaú",
   "Manaíra",
@@ -20,12 +22,15 @@ export function SearchForm({
   initial = {},
   showPrices = false,
   amenities = [],
+  destinations = [],
 }: {
   compact?: boolean;
   initial?: Record<string, string>;
   showPrices?: boolean;
   /** Comodidades dos imóveis publicados, como cadastradas no ERP. */
   amenities?: AmenityOption[];
+  /** Cidades com imóvel publicado (ERP): as únicas oferecidas em "Destino". */
+  destinations?: Destination[];
 }) {
   const router = useRouter();
   // Link antigo ou digitado ("wi-fi") marca a opção equivalente; sem equivalente, a opção é mantida.
@@ -39,6 +44,10 @@ export function SearchForm({
     ...(selectedAmenity && !matched ? [selectedAmenity] : []),
   ];
   const [error, setError] = useState("");
+  const [stay, setStay] = useState(() => ({
+    checkin: initial.checkin ?? (compact ? "" : addDays(today(), 3)),
+    checkout: initial.checkout ?? (compact ? "" : addDays(today(), 6)),
+  }));
   const [modality, setModality] = useState<Modality>(
     (initial.modality as Modality) ?? "TEMPORADA",
   );
@@ -46,7 +55,8 @@ export function SearchForm({
   const pricesVisible = showPrices && pricesVisibleFor(modality);
   return (
     <form
-      className={compact ? "catalog-filter" : "search-shell"}
+      // is-stay: temporada mostra período e hóspedes; o layout da busca muda com isso.
+      className={`${compact ? "catalog-filter" : "search-shell"} ${modality === "TEMPORADA" ? "is-stay" : ""}`}
       aria-label="Buscar imóveis"
       onSubmit={(e) => {
         e.preventDefault();
@@ -76,70 +86,58 @@ export function SearchForm({
     >
       <div className={compact ? "field" : "search-field"}>
         <label htmlFor="search-modality">Finalidade</label>
-        <select
+        <Select
           id="search-modality"
           name="modality"
           value={modality}
-          onChange={(event) => setModality(event.target.value as Modality)}
-        >
-          <option value="TEMPORADA">Temporada</option>
-          <option value="LOCACAO">Aluguel</option>
-          <option value="VENDA">Venda</option>
-        </select>
+          onChange={(value) => setModality(value as Modality)}
+          options={[
+            { value: "TEMPORADA", label: "Temporada" },
+            { value: "LOCACAO", label: "Aluguel" },
+            { value: "VENDA", label: "Venda" },
+          ]}
+        />
       </div>
       <div className={compact ? "field" : "search-field"}>
-        <label htmlFor="search-neighborhood">Destino</label>
-        <select
-          id="search-neighborhood"
-          name="neighborhood"
-          defaultValue={initial.neighborhood ?? ""}
-        >
-          <option value="">João Pessoa e região</option>
-          {neighborhoods.map((n) => (
-            <option key={n}>{n}</option>
-          ))}
-        </select>
+        <label htmlFor="search-destination">Destino</label>
+        <Select
+          id="search-destination"
+          name="destination"
+          defaultValue={initial.destination ?? ""}
+          options={[
+            { value: "", label: "Todos os destinos" },
+            ...destinations.map((d) => ({ value: destinationValue(d), label: destinationValue(d) })),
+          ]}
+        />
       </div>
       {modality === "TEMPORADA" && (
-        <div className={`${compact ? "field" : "search-field"} date-field`}>
-          <label htmlFor="search-checkin">Entrada</label>
-          <DateInput
-            id="search-checkin"
-            name="checkin"
+        <div
+          className={`${compact ? "field" : "search-field"} date-field date-range-field`}
+        >
+          <label htmlFor="search-dates">Entrada e saída</label>
+          <DateRangePicker
+            id="search-dates"
+            startName="checkin"
+            endName="checkout"
             min={today()}
-            defaultValue={
-              initial.checkin ?? (compact ? "" : addDays(today(), 3))
-            }
-          />
-        </div>
-      )}
-      {modality === "TEMPORADA" && (
-        <div className={`${compact ? "field" : "search-field"} date-field`}>
-          <label htmlFor="search-checkout">Saída</label>
-          <DateInput
-            id="search-checkout"
-            name="checkout"
-            min={addDays(today(), 1)}
-            defaultValue={
-              initial.checkout ?? (compact ? "" : addDays(today(), 6))
-            }
+            placeholder="Quando chega e quando sai?"
+            value={{ start: stay.checkin, end: stay.checkout }}
+            onChange={({ start, end }) => setStay({ checkin: start, checkout: end })}
           />
         </div>
       )}
       {modality === "TEMPORADA" && (
         <div className={compact ? "field" : "search-field"}>
           <label htmlFor="search-guests">Hóspedes</label>
-          <select
+          <Select
             id="search-guests"
             name="guests"
             defaultValue={initial.guests ?? "2"}
-          >
-            {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => (
-              <option value={n} key={n}>
-                {n} hóspede{n > 1 ? "s" : ""}
-              </option>
-            ))}
-          </select>
+            options={Array.from({ length: 20 }, (_, i) => ({
+              value: String(i + 1),
+              label: `${i + 1} hóspede${i > 0 ? "s" : ""}`,
+            }))}
+          />
         </div>
       )}
       {compact && (
@@ -175,30 +173,34 @@ export function SearchForm({
           {amenityChoices.length ? (
             <div className="field">
               <label htmlFor="amenity">Facilidade</label>
-              <select
+              <Select
                 id="amenity"
                 name="amenity"
                 defaultValue={selectedAmenity}
-              >
-                <option value="">Todas as facilidades</option>
-                {amenityChoices.map((a) => (
-                  <option key={a}>{a}</option>
-                ))}
-              </select>
+                options={[
+                  { value: "", label: "Todas as facilidades" },
+                  ...amenityChoices.map((a) => ({ value: a, label: a })),
+                ]}
+              />
             </div>
           ) : null}
           <div className="field">
             <label htmlFor="sort">Ordenar por</label>
-            <select id="sort" name="sort" defaultValue={initial.sort ?? ""}>
-              <option value="">Relevância</option>
-              {pricesVisible && (
-                <>
-                  <option value="price-asc">Menor preço</option>
-                  <option value="price-desc">Maior preço</option>
-                </>
-              )}
-              <option value="guests">Mais hóspedes</option>
-            </select>
+            <Select
+              id="sort"
+              name="sort"
+              defaultValue={initial.sort ?? ""}
+              options={[
+                { value: "", label: "Relevância" },
+                ...(pricesVisible
+                  ? [
+                      { value: "price-asc", label: "Menor preço" },
+                      { value: "price-desc", label: "Maior preço" },
+                    ]
+                  : []),
+                { value: "guests", label: "Mais hóspedes" },
+              ]}
+            />
           </div>
         </>
       )}

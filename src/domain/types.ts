@@ -69,6 +69,9 @@ export type FlatAgenda = {
 export type Filters = {
   modality?: Modality;
   neighborhood?: string;
+  /** Destino da busca (cidade + UF de imóvel publicado). */
+  city?: string;
+  state?: string;
   guests?: number;
   checkin?: string;
   checkout?: string;

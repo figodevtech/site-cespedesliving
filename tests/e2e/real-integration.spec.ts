@@ -33,7 +33,7 @@ test("real integration boundaries: identity, empty catalog and private routes", 
   ).toBe(401);
   await page.goto("/flats?modality=VENDA");
   await expect(page.getByLabel("Finalidade", { exact: true })).toHaveValue("VENDA");
-  await expect(page.getByLabel("Entrada", { exact: true })).toHaveCount(0);
+  await expect(page.getByLabel("Entrada e saída", { exact: true })).toHaveCount(0);
   await expect(page.locator(".flat-card")).toHaveCount(0);
   await expect(
     page.getByText("Nenhum imóvel atende", { exact: false }),

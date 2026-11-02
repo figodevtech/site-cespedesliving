@@ -7,6 +7,12 @@ export const mockAdapter: DataAdapter = {
     let result = mockFlats.filter((f) => f.active && f.published);
     if (filters.neighborhood)
       result = result.filter((f) => f.neighborhood === filters.neighborhood);
+    if (filters.city)
+      result = result.filter(
+        (f) =>
+          amenityKey(f.city) === amenityKey(filters.city!) &&
+          (!filters.state || f.state === filters.state),
+      );
     if (filters.guests)
       result = result.filter((f) => f.maxGuests >= filters.guests!);
     if (filters.minPrice !== undefined)

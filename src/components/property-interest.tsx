@@ -5,6 +5,14 @@ import type { Flat } from "@/domain/types";
 import { today } from "@/domain/dates";
 import { modalities, modalityLabels } from "@/domain/property";
 import { contactLink } from "@/lib/contact";
+import { DatePicker } from "./date-picker";
+import { Select } from "./select";
+
+// Horários de visita oferecidos (a equipe confirma o agendamento).
+const VISIT_TIMES = Array.from({ length: 21 }, (_, i) => {
+  const minutes = 8 * 60 + i * 30;
+  return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+});
 /**
  * Interesse em aluguel ou venda e pedido de visita. Nada é gravado: a mensagem
  * sai pronta para o WhatsApp da equipe, com o imóvel e o link da página.
@@ -12,6 +20,8 @@ import { contactLink } from "@/lib/contact";
 export function PropertyInterest({ flat }: { flat: Flat }) {
   const options = modalities(flat).filter((m) => m !== "TEMPORADA");
   const [visit, setVisit] = useState(false);
+  const [visitDay, setVisitDay] = useState("");
+  const [visitTime, setVisitTime] = useState("");
   const [error, setError] = useState("");
   const [prepared, setPrepared] =
     useState<ReturnType<typeof contactLink>>(null);
@@ -60,27 +70,32 @@ export function PropertyInterest({ flat }: { flat: Flat }) {
       }}
     >
       <h2>Conheça este imóvel</h2>
-      <label className="field">
-        Como podemos ajudar?
-        <select
+      <div className="field">
+        <label htmlFor="interest-kind">Como podemos ajudar?</label>
+        <Select
+          id="interest-kind"
           value={visit ? "visit" : "lead"}
-          onChange={(event) => setVisit(event.target.value === "visit")}
-        >
-          <option value="lead">Tenho interesse</option>
-          <option value="visit">Agendar visita</option>
-        </select>
-      </label>
+          onChange={(value) => {
+            setVisit(value === "visit");
+            setPrepared(null);
+          }}
+          options={[
+            { value: "lead", label: "Tenho interesse" },
+            { value: "visit", label: "Agendar visita" },
+          ]}
+        />
+      </div>
       {options.length > 1 && (
-        <label className="field">
-          Interesse em
-          <select name="modality" defaultValue={options[0]}>
-            {options.map((m) => (
-              <option key={m} value={m}>
-                {modalityLabels[m]}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="field">
+          <label htmlFor="interest-modality">Interesse em</label>
+          <Select
+            id="interest-modality"
+            name="modality"
+            defaultValue={options[0]}
+            onChange={() => setPrepared(null)}
+            options={options.map((m) => ({ value: m, label: modalityLabels[m] }))}
+          />
+        </div>
       )}
       {options.length === 1 && (
         <input type="hidden" name="modality" value={options[0]} />
@@ -90,16 +105,40 @@ export function PropertyInterest({ flat }: { flat: Flat }) {
         <input name="name" required maxLength={120} autoComplete="name" />
       </label>
       {visit && (
-        <label className="field">
-          Data e horário desejados
+        <div className="field">
+          <label htmlFor="visit-day">Data e horário desejados</label>
+          <div className="visit-when">
+            <DatePicker
+              id="visit-day"
+              min={today()}
+              required
+              placeholder="Escolha o dia"
+              value={visitDay}
+              onChange={(day) => {
+                setVisitDay(day);
+                setPrepared(null);
+              }}
+            />
+            <Select
+              aria-label="Horário da visita"
+              required
+              placeholder="Horário"
+              value={visitTime}
+              onChange={(time) => {
+                setVisitTime(time);
+                setPrepared(null);
+              }}
+              options={VISIT_TIMES.map((time) => ({ value: time, label: time }))}
+            />
+          </div>
+          {/* Mesmo campo de antes (data e hora juntas) para a mensagem do WhatsApp. */}
           <input
+            type="hidden"
             name="desiredAt"
-            type="datetime-local"
-            min={`${today()}T00:00`}
-            required
+            value={visitDay && visitTime ? `${visitDay}T${visitTime}` : ""}
           />
           <small>A visita depende da confirmação da equipe.</small>
-        </label>
+        </div>
       )}
       <label className="field">
         Mensagem

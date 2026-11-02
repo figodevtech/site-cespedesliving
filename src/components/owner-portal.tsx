@@ -1,6 +1,8 @@
 "use client";
 import type { Flat, OwnerDashboard } from "@/domain/types";
 import { money } from "@/domain/dates";
+import { DateRangePicker } from "./date-picker";
+import { Select } from "./select";
 import { SignOut } from "./auth-form";
 import { bookingLabels } from "./customer-account";
 export type StatementMovement = {
@@ -55,25 +57,29 @@ export function OwnerPortal({
         <SignOut />
       </div>
       <form className="portal-filters" action="/painel-proprietario">
-        <label className="field">
-          Imóvel
-          <select name="imovelId" defaultValue={filters.imovelId ?? ""}>
-            <option value="">Todos os meus imóveis</option>
-            {flats.map((flat) => (
-              <option key={flat.id} value={flat.id}>
-                {flat.title}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="field">
-          De
-          <input name="inicio" type="date" defaultValue={filters.inicio} />
-        </label>
-        <label className="field">
-          Até
-          <input name="fim" type="date" defaultValue={filters.fim} />
-        </label>
+        <div className="field">
+          <label htmlFor="owner-property">Imóvel</label>
+          <Select
+            id="owner-property"
+            name="imovelId"
+            defaultValue={filters.imovelId ?? ""}
+            options={[
+              { value: "", label: "Todos os meus imóveis" },
+              ...flats.map((flat) => ({ value: flat.id, label: flat.title })),
+            ]}
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="owner-period">Período</label>
+          <DateRangePicker
+            id="owner-period"
+            startName="inicio"
+            endName="fim"
+            unit="dias"
+            placeholder="Todo o período"
+            defaultValue={{ start: filters.inicio ?? "", end: filters.fim ?? "" }}
+          />
+        </div>
         <button className="button">Aplicar filtros</button>
       </form>
       <div className="metric-grid">

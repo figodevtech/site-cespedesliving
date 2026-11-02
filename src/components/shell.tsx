@@ -186,7 +186,7 @@ export function Footer() {
         </div>
         <div className="footer-bottom">
           <span>© {new Date().getFullYear()} Cespedes Living Hospedagens</span>
-          <span>Imagens de ambientação geradas por IA.</span>
+          <span>Desenvolvido por <a href="https://www.figosoftwares.com.br" target="_blank" rel="noopener noreferrer">Figo Softwares</a></span>
         </div>
       </div>
     </footer>

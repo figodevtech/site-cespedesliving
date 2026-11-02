@@ -6,6 +6,7 @@ import { publicFlat } from "./adapters/api";
 import { erpRequest } from "@/lib/erp";
 import { mockFlats } from "@/data/flats";
 import { amenityKey, type AmenityOption } from "@/domain/amenities";
+import type { Destination } from "@/domain/destinations";
 export async function getFlatsPage(
   filters: Filters,
   page: number,
@@ -47,6 +48,30 @@ export const getFlats = async (filters?: Filters) => {
   return flats.sort((a, b) => Number(!!b.realPhotos) - Number(!!a.realPhotos));
 };
 export const getFlat = (slug: string) => getAdapter().getFlat(slug);
+/**
+ * Cidades com imóvel publicado, para o filtro "Destino". Sem resposta do ERP, a lista
+ * fica vazia e a busca segue sem filtro de destino.
+ */
+export async function getDestinations(): Promise<Destination[]> {
+  if (isMock()) {
+    const groups = new Map<string, Destination>();
+    for (const flat of mockFlats.filter((f) => f.active && f.published)) {
+      const key = `${amenityKey(flat.city)}|${flat.state}`;
+      const item = groups.get(key) ?? { city: flat.city, state: flat.state, total: 0 };
+      item.total++;
+      groups.set(key, item);
+    }
+    return [...groups.values()].sort((a, b) => a.city.localeCompare(b.city, "pt-BR"));
+  }
+  try {
+    const result = await erpRequest<{ items: { cidade: string; estado: string; total: number }[] }>(
+      "/public/destinos",
+    );
+    return result.items.map((d) => ({ city: d.cidade, state: d.estado, total: d.total }));
+  } catch {
+    return [];
+  }
+}
 /** Períodos sem vaga e pacotes fechados do imóvel; falha na busca só esconde o aviso. */
 export async function getFlatAgenda(flatId: string): Promise<FlatAgenda | null> {
   if (isMock()) return { unavailable: [], packages: [] };
