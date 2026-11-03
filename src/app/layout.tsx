@@ -77,7 +77,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" data-scroll-behavior="smooth">
       {/* Extensões (ex.: ColorZilla) injetam atributos no body antes da hidratação. */}
       <body suppressHydrationWarning>
         <a href="#main-content" className="skip-link">

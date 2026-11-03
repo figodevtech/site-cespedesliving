@@ -325,10 +325,17 @@ textarea:focus-visible {
   background: var(--gold);
   color: var(--night);
   font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   border-radius: 99px;
-  line-height: 16px;
-  width: 16px;
+  line-height: 1;
+  min-width: 16px;
   height: 16px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .mobile-toggle {
   display: none;
