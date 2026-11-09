@@ -107,19 +107,66 @@ export type DemoProfile = {
   role: "guest" | "owner";
   demo: true;
 };
+/** Reserva vista pelo proprietário (sem dados do hóspede). Campos opcionais chegam do ERP novo. */
+export type OwnerDashboardReservation = {
+  id: string;
+  flat: string;
+  /** "AAAA-MM-DD a AAAA-MM-DD": formato antigo, ainda enviado pelo ERP. */
+  period: string;
+  amount: number;
+  status: string;
+  flatId?: string;
+  checkin?: string;
+  checkout?: string;
+  guests?: number;
+  paymentStatus?: string;
+  createdAt?: string | null;
+};
+/** Bloqueio, manutenção ou ocupação ativa de um imóvel (fim nulo = sem data para acabar). */
+export type OwnerOccupation = {
+  id: number | string;
+  imovel_id: number | string;
+  tipo: string;
+  inicio: string;
+  fim: string | null;
+  motivo?: string | null;
+};
 export type OwnerDashboard = {
   occupancy: number;
   revenue: number;
   expenses: number;
   payout: number;
-  reservations: {
-    id: string;
-    flat: string;
-    period: string;
-    amount: number;
-    status: string;
-  }[];
+  reservations: OwnerDashboardReservation[];
   maintenance: { title: string; status: string; amount: number | null }[];
+  ocupacoes?: OwnerOccupation[];
+};
+/** Movimento do extrato do proprietário (imovel_movimento no ERP). */
+export type OwnerMovement = {
+  id: string | number;
+  data?: string;
+  data_movimento?: string;
+  created_at?: string;
+  descricao?: string;
+  /** BRUTO_RECEBIDO, TAXA_ADMIN, DESPESA_PROPRIETARIO ou REPASSE. */
+  tipo?: string;
+  natureza?: string;
+  valor?: number | string;
+  imovel_id?: number | string | null;
+  reserva_id?: number | string | null;
+  imovel_titulo?: string;
+  imovel?: { id?: number | string; titulo?: string } | null;
+  documento_id?: string | null;
+};
+export type OwnerStatementData = {
+  items: OwnerMovement[];
+  totais: {
+    recebido: number;
+    receita_administradora: number;
+    despesas: number;
+    repassado: number;
+    /** Saldo atual, de todo o histórico (não só do período filtrado). */
+    saldo_repassar: number;
+  };
 };
 export type OwnerStatement = {
   id: string;
