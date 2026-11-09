@@ -10,7 +10,7 @@ import { FlatCard } from "@/components/flat-card";
 import { ButtonLink, Photo } from "@/components/ui";
 import { SearchForm } from "@/components/search-form";
 import { isMock } from "@/services/adapter";
-// Keep default travel dates current on every request.
+// Catálogo do ERP a cada visita (nada fica congelado no build).
 export const dynamic = "force-dynamic";
 export default async function Home() {
   const flats = await getFlats();

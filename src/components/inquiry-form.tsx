@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import type { Flat } from "@/domain/types";
-import { addDays, today, validateStay } from "@/domain/dates";
+import { today, validateStay } from "@/domain/dates";
 import { contactLink } from "@/lib/contact";
 import { useHydrated } from "./demo-hook";
 import { DateRangePicker } from "./date-picker";
@@ -21,8 +21,8 @@ export function InquiryForm({
     useState<ReturnType<typeof contactLink>>(null);
   const channel = contactLink("Olá! Gostaria de consultar uma hospedagem.");
   const [stay, setStay] = useState({
-    checkin: initial.checkin ?? addDays(today(), 3),
-    checkout: initial.checkout ?? addDays(today(), 6),
+    checkin: initial.checkin ?? "",
+    checkout: initial.checkout ?? "",
   });
   // O seletor não dispara o "change" do fieldset: limpa a mensagem pronta aqui.
   const changeStay = (next: typeof stay) => {

@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Search } from "lucide-react";
-import { addDays, today, validateStay } from "@/domain/dates";
+import { today, validateStay } from "@/domain/dates";
 import type { Modality } from "@/domain/types";
 import { amenityKey, type AmenityOption } from "@/domain/amenities";
 import { pricesVisibleFor } from "@/domain/property";
@@ -45,8 +45,8 @@ export function SearchForm({
   ];
   const [error, setError] = useState("");
   const [stay, setStay] = useState(() => ({
-    checkin: initial.checkin ?? (compact ? "" : addDays(today(), 3)),
-    checkout: initial.checkout ?? (compact ? "" : addDays(today(), 6)),
+    checkin: initial.checkin ?? "",
+    checkout: initial.checkout ?? "",
   }));
   const [modality, setModality] = useState<Modality>(
     (initial.modality as Modality) ?? "TEMPORADA",

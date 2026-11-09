@@ -190,6 +190,22 @@
   font-size: 0.7rem;
   color: #58636b;
 }
+.date-popover-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.date-popover-actions .button-sm {
+  min-height: 36px;
+  padding: 8px 18px;
+}
+.date-popover-actions .button:disabled {
+  opacity: 0.45;
+  transform: none;
+  box-shadow: none;
+}
 .date-legend {
   display: flex;
   flex-wrap: wrap;

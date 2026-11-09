@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CalendarCheck, ShieldCheck } from "lucide-react";
 import type { Booking, Flat, FlatAgenda, ReservationQuote } from "@/domain/types";
 import {
-  addDays,
   formatDate,
   money,
   today,
@@ -36,19 +35,24 @@ export function BookingForm({
   const sequence = useRef(0);
   const idempotencyKey = useRef<string | null>(null);
   const [dates, setDates] = useState({
-    checkin: initial.checkin ?? addDays(today(), 3),
-    checkout: initial.checkout ?? addDays(today(), 6),
+    // Sem datas no link, o formulário começa vazio: a pessoa escolhe o período.
+    checkin: initial.checkin ?? "",
+    checkout: initial.checkout ?? "",
     guests: Number(initial.guests ?? Math.min(2, flat.maxGuests)),
   });
   const [quote, setQuote] = useState<ReservationQuote | null>(null);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const hasDates = Boolean(dates.checkin && dates.checkout);
+  const [loading, setLoading] = useState(hasDates);
   const [sending, setSending] = useState(false);
   const [quoteRevision, setQuoteRevision] = useState(0);
   const loginHref = `/entrar?next=${encodeURIComponent(`/reservar/${flat.slug}?${new URLSearchParams({ ...dates, guests: String(dates.guests) })}`)}`;
   useEffect(() => {
     const controller = new AbortController();
     const current = ++sequence.current;
+    // Sem período escolhido não há o que cotar: o resumo só pede as datas. Só acontece ao
+    // abrir sem datas (o campo é obrigatório, sem "Limpar"), quando o estado inicial já está vazio.
+    if (!dates.checkin || !dates.checkout) return;
     // Each input change invalidates the previous response before another request begins.
     const timer = setTimeout(async () => {
       setLoading(true);
@@ -275,7 +279,9 @@ export function BookingForm({
         </fieldset>
       )}
       <div className="quote-summary" aria-live="polite" aria-busy={loading}>
-        {loading ? (
+        {!hasDates ? (
+          <p className="muted">Escolha as datas para ver o valor da estadia.</p>
+        ) : loading ? (
           <p className="muted">Consultando período e tarifa…</p>
         ) : quote ? (
           <>

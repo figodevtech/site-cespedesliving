@@ -52,7 +52,7 @@ summary:focus-visible {
 }
 button:disabled {
   opacity: 0.6;
-  cursor: wait;
+  cursor: default;
   transform: none;
   box-shadow: none;
 }

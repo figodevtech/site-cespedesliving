@@ -141,7 +141,7 @@ export function DatePicker({
     if (blocked(day)) return;
     if (!controlled) setInternal(day);
     onChange?.(day);
-    close();
+    // O calendário fica aberto para conferir a data; fecha em "Concluir", Esc ou clique fora.
     onPicked?.(day);
   };
 
@@ -338,9 +338,9 @@ export function DatePicker({
           );
         })}
       </div>
-      {legend || (!required && current) ? (
-        <div className="date-popover-foot">
-          {legend ? <div className="date-legend">{legend}</div> : <span />}
+      <div className="date-popover-foot">
+        {legend ? <div className="date-legend">{legend}</div> : <span />}
+        <div className="date-popover-actions">
           {!required && current ? (
             <button
               type="button"
@@ -348,14 +348,16 @@ export function DatePicker({
               onClick={() => {
                 if (!controlled) setInternal("");
                 onChange?.("");
-                close();
               }}
             >
               Limpar
             </button>
           ) : null}
+          <button type="button" className="button button-dark button-sm" onClick={() => close()}>
+            Concluir
+          </button>
         </div>
-      ) : null}
+      </div>
     </div>
   );
 
@@ -491,12 +493,16 @@ export function DateRangePicker({
 
   const beforeMin = (day: string) => Boolean(min && day < min);
   const startBlocked = (day: string) => beforeMin(day) || Boolean(isStartDisabled?.(day));
-  /** Na fase da saída: antes da entrada vira nova entrada; depois, precisa servir como fim. */
-  const blocked = (day: string) => {
-    if (!draft) return startBlocked(day);
-    if (day < draft || (day === draft && !sameDay)) return startBlocked(day);
-    return Boolean(isEndDisabled?.(draft, day));
-  };
+  /** Saída que fecha o período com a entrada já clicada. */
+  const endOk = (day: string) =>
+    draft !== null &&
+    (day > draft || (sameDay && day === draft)) &&
+    !isEndDisabled?.(draft, day);
+  /**
+   * Na fase da saída, o dia que serve de fim fecha o período; os demais valem como nova entrada.
+   * Ex.: entrada 13 e ocupado de 17 a 20: 20 não fecha o período, mas pode começar outro.
+   */
+  const blocked = (day: string) => !endOk(day) && startBlocked(day);
 
   const show = () => {
     if (disabled) return;
@@ -518,12 +524,13 @@ export function DateRangePicker({
   };
   const pick = (day: string) => {
     if (blocked(day)) return;
-    if (!draft || day < draft || (day === draft && !sameDay)) {
+    if (!draft || !endOk(day)) {
       setDraft(day);
       return;
     }
+    // O calendário fica aberto para conferir o período; fecha em "Concluir", Esc ou clique fora.
     commit({ start: draft, end: day });
-    close();
+    setDraft(null);
   };
 
   useLayoutEffect(() => {
@@ -583,11 +590,8 @@ export function DateRangePicker({
 
   // Período mostrado: a escolha em andamento (com a prévia do mouse) ou o já confirmado.
   const shownStart = draft ?? current.start;
-  const shownEnd = draft
-    ? hover && (hover > draft || (sameDay && hover === draft)) && !blocked(hover)
-      ? hover
-      : null
-    : current.end;
+  // Dia que só reinicia o período não ganha prévia de saída.
+  const shownEnd = draft ? (hover && endOk(hover) ? hover : null) : current.end;
   const todayValue = today();
   const viewKey = `${view.year}-${pad(view.month + 1)}`;
   const prevDisabled = Boolean(min && viewKey <= min.slice(0, 7));
@@ -714,23 +718,27 @@ export function DateRangePicker({
       <div className="date-months" onMouseLeave={() => setHover(null)}>
         {Array.from({ length: months }, (_, i) => renderMonth(i))}
       </div>
-      {legend || (!required && (current.start || current.end)) ? (
-        <div className="date-popover-foot">
-          {legend ? <div className="date-legend">{legend}</div> : <span />}
+      <div className="date-popover-foot">
+        {legend ? <div className="date-legend">{legend}</div> : <span />}
+        <div className="date-popover-actions">
           {!required && (current.start || current.end) ? (
             <button
               type="button"
               className="text-link"
               onClick={() => {
+                setDraft(null);
                 commit({ start: "", end: "" });
-                close();
               }}
             >
               Limpar
             </button>
           ) : null}
+          {/* Com a entrada clicada e sem saída, fechar descartaria a escolha: falta a saída. */}
+          <button type="button" className="button button-dark button-sm" disabled={Boolean(draft)} onClick={() => close()}>
+            Concluir
+          </button>
         </div>
-      ) : null}
+      </div>
     </div>
   );
 
