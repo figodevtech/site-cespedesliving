@@ -121,6 +121,15 @@ export type OwnerDashboardReservation = {
   guests?: number;
   paymentStatus?: string;
   createdAt?: string | null;
+  /** Titular da reserva (sem documento). Ausente em ERPs anteriores a este campo. */
+  guest?: OwnerReservationGuest | null;
+};
+export type OwnerReservationGuest = {
+  name: string | null;
+  phone: string | null;
+  email: string | null;
+  city: string | null;
+  state: string | null;
 };
 /** Bloqueio, manutenção ou ocupação ativa de um imóvel (fim nulo = sem data para acabar). */
 export type OwnerOccupation = {
@@ -156,6 +165,8 @@ export type OwnerMovement = {
   imovel_titulo?: string;
   imovel?: { id?: number | string; titulo?: string } | null;
   documento_id?: string | null;
+  /** Repasse registrado, mas ainda não lançado (ou não pago) no financeiro do ERP. */
+  repasse_pendente?: boolean;
 };
 export type OwnerStatementData = {
   items: OwnerMovement[];

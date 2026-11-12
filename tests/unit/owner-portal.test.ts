@@ -67,8 +67,17 @@ describe("extrato do proprietário", () => {
     expect(movementTotals(items).expenses).toBe(30);
   });
 
-  it("mostra o efeito no saldo: recebido soma, o resto sai", () => {
-    expect(items.map(movementEffect)).toEqual([1000, -140, -30, -800.1, -100]);
+  it("repasse pendente aparece no extrato, mas não conta como repassado", () => {
+    const comPendente: OwnerMovement[] = [
+      ...items,
+      { id: -37, tipo: "REPASSE", valor: 478.4, data_movimento: "2026-11-12T15:00:00Z", repasse_pendente: true },
+    ];
+    expect(movementTotals(comPendente, "2026-11-01", "2026-11-30").payouts).toBe(800.1);
+    expect(monthlySeries(comPendente, 3, "2026-11-12")[2]).toMatchObject({ payouts: 800.1 });
+  });
+
+  it("mostra o sinal para o proprietário: recebido e repasse entram, taxa e despesa saem", () => {
+    expect(items.map(movementEffect)).toEqual([1000, -140, -30, 800.1, -100]);
   });
 
   it("monta os últimos meses do gráfico, inclusive os vazios", () => {

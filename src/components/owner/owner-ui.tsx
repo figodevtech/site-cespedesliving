@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ElementType, ReactNode } from "react";
-import { ArrowLeft, ChevronRight, FileText, Moon, Users } from "lucide-react";
+import { ArrowLeft, ChevronRight, FileText, Moon, UserRound, Users } from "lucide-react";
 import { Photo } from "../ui";
 import { money } from "@/domain/dates";
 import type { OwnerMovement } from "@/domain/types";
@@ -145,10 +145,17 @@ export function ReservationRow({ reservation, showFlat = true }: { reservation: 
         <small>{dayMonth(reservation.checkin).split(" ")[1] ?? ""}</small>
       </span>
       <span className="op-res-main">
+        {/* O número da reserva vai no título; sem o imóvel (página do imóvel), fica só ele. */}
         <span className="op-res-title">
-          {showFlat ? reservation.flat : `Reserva #${reservation.id}`}
+          {showFlat ? `Reserva #${reservation.id} · ${reservation.flat}` : `Reserva #${reservation.id}`}
         </span>
         <span className="op-res-meta">
+          {reservation.guest?.name ? (
+            <>
+              <UserRound size={12} aria-hidden="true" /> {reservation.guest.name}
+              <span className="op-dot" />
+            </>
+          ) : null}
           {dayMonth(reservation.checkin)} → {dayMonth(reservation.checkout)}
           <span className="op-dot" />
           <Moon size={12} aria-hidden="true" /> {plural(reservation.nights, "noite", "noites")}
@@ -156,11 +163,6 @@ export function ReservationRow({ reservation, showFlat = true }: { reservation: 
             <>
               <span className="op-dot" />
               <Users size={12} aria-hidden="true" /> {plural(reservation.guests, "hóspede", "hóspedes")}
-            </>
-          ) : null}
-          {showFlat ? (
-            <>
-              <span className="op-dot" />#{reservation.id}
             </>
           ) : null}
         </span>
@@ -201,7 +203,7 @@ export function MovementTable({
           <tr>
             <th scope="col">Data</th>
             {showProperty ? <th scope="col">Imóvel</th> : null}
-            <th scope="col">Tipo</th>
+            <th scope="col" className="op-center">Tipo</th>
             <th scope="col">Descrição</th>
             <th scope="col" className="op-num">Valor</th>
             <th scope="col">
@@ -217,12 +219,14 @@ export function MovementTable({
               <tr key={item.id}>
                 <td className="op-nowrap">{shortDate(movementDay(item))}</td>
                 {showProperty ? <td>{movementProperty(item) || "—"}</td> : null}
-                <td>
+                <td className="op-center">
                   <Pill tone={movementTone[type]}>{movementLabel[type] ?? (type || "Movimento")}</Pill>
                 </td>
                 <td className="op-desc">{item.descricao || "—"}</td>
-                <td className={`op-num op-nowrap ${effect < 0 ? "op-out" : "op-in"}`}>
-                  {effect < 0 ? "− " : "+ "}
+                {/* Hóspede em dourado; repasse em verde, por ser o que chegou à conta do proprietário. */}
+                <td className={`op-num op-nowrap ${effect < 0 ? "op-out" : type === "REPASSE" ? "op-payout" : type === "BRUTO_RECEBIDO" ? "op-guest" : "op-in"}`}>
+                  {/* O pago pelo hóspede fica sem "+": só o repasse entra de fato na conta do proprietário. */}
+                  {effect < 0 ? "− " : type === "BRUTO_RECEBIDO" ? "" : "+ "}
                   {money(Math.abs(effect))}
                 </td>
                 <td className="op-nowrap">

@@ -1200,6 +1200,10 @@
 .op-num {
   text-align: right !important;
 }
+/* Coluna Tipo do extrato: título e etiqueta no centro. */
+.op-center {
+  text-align: center !important;
+}
 .op-nowrap {
   white-space: nowrap;
 }
@@ -1213,6 +1217,16 @@
 }
 .op-out {
   color: var(--op-ink);
+  font-weight: 600;
+}
+/* Pago pelo hóspede: dourado, pois ainda passa pela imobiliária antes de chegar ao proprietário. */
+.op-guest {
+  color: var(--op-gold-dark);
+  font-weight: 600;
+}
+/* Repasse: o verde de entrada, porque é o que chegou de fato à conta do proprietário. */
+.op-payout {
+  color: #2a6a49;
   font-weight: 600;
 }
 .op-sr {

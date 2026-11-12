@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CalendarClock, ChevronRight, Info, LogIn, LogOut, Moon, Users, XCircle } from "lucide-react";
+import { CalendarClock, ChevronRight, Info, LogIn, LogOut, Mail, MapPin, Moon, Phone, Users, XCircle } from "lucide-react";
 import { ownerDashboard, ownerFlats, ownerStatement } from "@/lib/owner-portal";
 import { money, today } from "@/domain/dates";
 import {
@@ -16,6 +16,19 @@ import { BookingPills, Empty, MovementTable, PageHeading, Panel, Pill, PropertyT
 
 export const metadata = { title: "Reserva" };
 
+/** "83999998888" → "(83) 99999-8888", com os dígitos para o link; sem DDD, mostra como veio. */
+function phoneOf(value?: string | null) {
+  const digits = String(value ?? "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
+  if (!digits) return null;
+  const label =
+    digits.length === 11 ? `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+    : digits.length === 10 ? `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
+    : String(value).trim();
+  // Com DDD (10 ou 11 dígitos), o link leva o +55; fora disso, disca os dígitos como vieram.
+  const href = `tel:${digits.length === 10 || digits.length === 11 ? `+55${digits}` : digits}`;
+  return { href, label };
+}
+
 export default async function OwnerReservation({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [flats, dashboard, statement] = await Promise.all([ownerFlats(), ownerDashboard(), ownerStatement()]);
@@ -28,8 +41,16 @@ export default async function OwnerReservation({ params }: { params: Promise<{ i
     .filter((item) => String(item.reserva_id ?? "") === reservation.id)
     .sort((a, b) => movementDay(b).localeCompare(movementDay(a)));
   const totals = movementTotals(movements);
-  const net = Math.round((totals.received - totals.fees) * 100) / 100;
+  const cents = (value: number) => Math.round(value * 100);
+  // A parte do proprietário: o que o hóspede pagou menos a taxa e as despesas da reserva.
+  const net = (cents(totals.received) - cents(totals.fees) - cents(totals.expenses)) / 100;
+  // Os totais já deixam de fora o repasse pendente (ainda não pago): ele não conta como repassado.
+  const paidPayouts = totals.payouts;
+  const pending = (cents(net) - cents(paidPayouts)) / 100;
   const paid = reservation.amount > 0 ? Math.min(100, Math.max(0, Math.round((totals.received / reservation.amount) * 100))) : 0;
+  const guest = reservation.guest;
+  const guestPhone = phoneOf(guest?.phone);
+  const guestPlace = [guest?.city, guest?.state].filter(Boolean).join(" - ");
   const cancelled = reservation.status === "CANCELLED";
   const done = (date: string) => !cancelled && (reservation.status === "COMPLETED" || (Boolean(date) && date <= day));
   const createdDay = reservation.createdAt ? movementDay({ id: "criacao", created_at: reservation.createdAt }) : "";
@@ -106,14 +127,42 @@ export default async function OwnerReservation({ params }: { params: Promise<{ i
             ) : null}
           </section>
 
+          {guest?.name ? (
+            <Panel title={guest.name} eyebrow="Hóspede titular">
+              {guestPhone || guest.email || guestPlace ? (
+                <ul className="op-specs op-specs-lg" aria-label="Contato do hóspede">
+                  {guestPhone ? (
+                    <li>
+                      <Phone size={15} aria-hidden="true" />
+                      <a className="op-link" href={guestPhone.href}>{guestPhone.label}</a>
+                    </li>
+                  ) : null}
+                  {guest.email ? (
+                    <li>
+                      <Mail size={15} aria-hidden="true" />
+                      <a className="op-link" href={`mailto:${guest.email}`}>{guest.email}</a>
+                    </li>
+                  ) : null}
+                  {guestPlace ? (
+                    <li>
+                      <MapPin size={15} aria-hidden="true" /> {guestPlace}
+                    </li>
+                  ) : null}
+                </ul>
+              ) : (
+                <Empty>Sem contato cadastrado para este hóspede.</Empty>
+              )}
+            </Panel>
+          ) : null}
+
           <Panel title="Movimentações desta reserva" eyebrow="Extrato">
             {movements.length ? (
               <MovementTable items={movements} showProperty={false} caption={`Movimentações da reserva ${reservation.id}`} />
             ) : (
-              <Empty>Nenhum pagamento do hóspede registrado ainda.</Empty>
+              <Empty>Nenhuma movimentação registrada para esta reserva ainda.</Empty>
             )}
             <p className="op-note">
-              <Info size={14} aria-hidden="true" /> Despesas do imóvel e repasses são lançados por imóvel e aparecem no{" "}
+              <Info size={14} aria-hidden="true" /> Despesas e repasses lançados sem vínculo com uma reserva aparecem no{" "}
               <Link href={`/painel-proprietario/extrato${reservation.flatId ? `?imovelId=${encodeURIComponent(reservation.flatId)}` : ""}`} className="op-link">
                 extrato
               </Link>
@@ -132,15 +181,32 @@ export default async function OwnerReservation({ params }: { params: Promise<{ i
               </div>
               <div>
                 <dt>Recebido do hóspede</dt>
-                <dd className="op-in">{money(totals.received)}</dd>
+                <dd className="op-guest">{money(totals.received)}</dd>
               </div>
               <div>
                 <dt>Taxa de administração</dt>
                 <dd>− {money(totals.fees)}</dd>
               </div>
+              {totals.expenses ? (
+                <div>
+                  <dt>Despesas do imóvel</dt>
+                  <dd>− {money(totals.expenses)}</dd>
+                </div>
+              ) : null}
               <div className="op-values-total">
                 <dt>Líquido para você</dt>
                 <dd>{money(net)}</dd>
+              </div>
+              <div>
+                <dt>Repassado a você</dt>
+                <dd className={paidPayouts ? "op-payout" : undefined}>{paidPayouts ? `+ ${money(paidPayouts)}` : money(0)}</dd>
+              </div>
+              <div>
+                <dt>Falta repassar</dt>
+                {/* Com tudo repassado, diz isso em vez de mostrar R$ 0,00. */}
+                <dd className={pending <= 0 && net > 0 ? "op-payout" : undefined}>
+                  {pending > 0 ? money(pending) : net > 0 ? "Repasse completo" : "—"}
+                </dd>
               </div>
             </dl>
             {!cancelled ? (

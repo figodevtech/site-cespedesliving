@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowUpRight, Bath, BedDouble, CalendarRange, Clock, Maximize2, Users, Wallet, Wrench } from "lucide-react";
+import { ArrowUpRight, Bath, BedDouble, CalendarRange, Clock, Landmark, Maximize2, Users, Wallet, Wrench } from "lucide-react";
 import { ownerDashboard, ownerFlats, ownerQuery, ownerStatement } from "@/lib/owner-portal";
 import { addDays, money, today } from "@/domain/dates";
 import {
@@ -8,6 +8,7 @@ import {
   dayStrip,
   movementDay,
   movementTotals,
+  movementType,
   normalizeReservations,
   occupancyRate,
   periodRange,
@@ -41,6 +42,9 @@ export default async function OwnerProperty({ params }: { params: Promise<{ id: 
   const blocks = occupations.filter((occupation) => ["MANUTENCAO", "BLOQUEIO"].includes(occupation.tipo));
   const strip = dayStrip(reservations, occupations, 30, day);
   const received = movementTotals(statement.items, periodRange("12m", day).start, day).received;
+  // Repassado em todo o histórico do imóvel, e quando foi o último repasse.
+  const payouts = statement.items.filter((item) => movementType(item) === "REPASSE" && Number(item.valor) > 0 && !item.repasse_pendente);
+  const lastPayout = payouts.map(movementDay).sort().at(-1);
   const occupancy = occupancyRate(reservations, addDays(day, -30), addDays(day, 1), 1);
   const status = propertyStatusOf(flat);
   const recent = [...statement.items].sort((a, b) => movementDay(b).localeCompare(movementDay(a))).slice(0, 8);
@@ -108,9 +112,15 @@ export default async function OwnerProperty({ params }: { params: Promise<{ id: 
         </div>
       </section>
 
-      <div className="op-stats">
+      <div className="op-stats op-stats-5">
         <StatCard tone="hero" icon={Wallet} label="Saldo a repassar" value={money(statement.totais.saldo_repassar)} hint="Deste imóvel, já recebido dos hóspedes." />
         <StatCard icon={ArrowUpRight} label="Recebido (12 meses)" value={money(received)} hint="Pagamentos dos hóspedes" />
+        <StatCard
+          icon={Landmark}
+          label="Repassado a você"
+          value={money(statement.totais.repassado)}
+          hint={lastPayout ? `Último repasse em ${shortDate(lastPayout)}` : "Nenhum repasse ainda"}
+        />
         <StatCard icon={BedDouble} label="Ocupação (30 dias)" value={`${occupancy.rate}%`} hint={plural(occupancy.nights, "noite reservada", "noites reservadas")}>
           <div className="op-meter" aria-hidden="true">
             <span style={{ width: `${occupancy.rate}%` }} />

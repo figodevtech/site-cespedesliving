@@ -130,12 +130,13 @@ export const movementType = (item: OwnerMovement) => item.tipo ?? item.natureza 
 export const movementValue = (item: OwnerMovement) => Number(item.valor ?? 0) || 0;
 
 /**
- * Efeito no saldo do proprietário: o recebido soma; taxa, despesa e repasse saem dele.
- * Estornos já chegam com o sinal trocado no valor.
+ * Sinal do valor do ponto de vista do proprietário: o recebido do hóspede e o repasse (dinheiro
+ * que chega à conta dele) entram; taxa e despesa saem. No saldo a repassar o repasse abate, mas
+ * para quem lê o extrato ele é entrada, não despesa. Estornos já chegam com o sinal trocado.
  */
 export function movementEffect(item: OwnerMovement) {
   const value = movementValue(item);
-  return movementType(item) === "BRUTO_RECEBIDO" ? value : -value;
+  return ["BRUTO_RECEBIDO", "REPASSE"].includes(movementType(item)) ? value : -value;
 }
 
 /** Dia civil do movimento em João Pessoa (o ERP grava data e hora em UTC). */
@@ -174,6 +175,8 @@ export function movementTotals(
   for (const item of items) {
     const day = movementDay(item);
     if ((start && day < start) || (end && day > end)) continue;
+    // Repasse ainda não pago: aparece no extrato como pendente, mas não foi repassado.
+    if (item.repasse_pendente) continue;
     const value = cents(movementValue(item));
     const type = movementType(item);
     if (type === "BRUTO_RECEBIDO") totals.received += value;
@@ -199,7 +202,7 @@ export function monthlySeries(items: OwnerMovement[], months = 6, day = today())
   const series = keys.map((key) => ({ key, label: monthShort(key), received: 0, payouts: 0 }));
   for (const item of items) {
     const entry = series.find((row) => row.key === movementDay(item).slice(0, 7));
-    if (!entry) continue;
+    if (!entry || item.repasse_pendente) continue;
     const type = movementType(item);
     if (type === "BRUTO_RECEBIDO") entry.received += movementValue(item);
     if (type === "REPASSE") entry.payouts += movementValue(item);
