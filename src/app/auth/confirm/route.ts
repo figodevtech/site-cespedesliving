@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
-import { erpRequest } from "@/lib/erp";
+import { syncProfile } from "@/lib/erp";
 import { cookies } from "next/headers";
-import { SIGNUP_NEXT_COOKIE, safeNext } from "@/lib/auth-validation";
-import type { SiteProfile } from "@/domain/types";
+import { SIGNUP_NEXT_COOKIE, destinationFor } from "@/lib/auth-validation";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const client = await createClient();
@@ -29,24 +28,13 @@ export async function GET(request: Request) {
       next = "/definir-senha";
     else {
       try {
-        await erpRequest(
-          "/site/me/sync",
-          { method: "POST" },
-          result.data.session.access_token,
+        const profile = await syncProfile(result.data.session.access_token);
+        next = destinationFor(
+          profile.role,
+          url.searchParams.get("next") ??
+            (await cookies()).get(SIGNUP_NEXT_COOKIE)?.value ??
+            null,
         );
-        const profile = await erpRequest<SiteProfile>(
-          "/site/me",
-          undefined,
-          result.data.session.access_token,
-        );
-        next =
-          profile.role === "owner"
-            ? "/painel-proprietario"
-            : safeNext(
-                url.searchParams.get("next") ??
-                  (await cookies()).get(SIGNUP_NEXT_COOKIE)?.value ??
-                  null,
-              );
       } catch {
         next = "/cadastro-pendente";
       }

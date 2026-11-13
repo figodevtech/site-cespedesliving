@@ -14,7 +14,6 @@ export default async function Page({
       <PageHero eyebrow="Minha conta" title="Que bom ter você aqui." />
       <AuthForm
         mode="signin"
-        role={p.role === "owner" ? "owner" : "guest"}
         next={safeNext(p.next ?? null)}
         linkError={Boolean(p.error)}
       />

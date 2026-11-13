@@ -33,3 +33,6 @@
 .agenda-package + .agenda-package { margin-top: 6px; }
 .agenda-package strong { color: #4b3c22; }
 .agenda-package.is-hit { border-color: #d9a441; box-shadow: 0 0 0 2px #d9a44133; }
+/* App instalado (PWA): só rolagem, sem pinça nem duplo toque para zoom. :where mantém
+   especificidade zero, então um componente que defina touch-action próprio continua valendo. */
+html.pwa-standalone, :where(html.pwa-standalone) * { touch-action: pan-x pan-y; }

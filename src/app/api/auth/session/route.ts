@@ -24,8 +24,11 @@ export async function GET() {
       {
         signedIn: true,
         firstName: name.split(/\s+/)[0] || null,
-        // Proprietário só entra por convite do ERP; o resto é cliente.
-        role: meta.origem === "CONVITE_ERP" ? "owner" : "guest",
+        // Proprietário só nasce no ERP (convite ou senha criada pela equipe); o resto é cliente.
+        role:
+          meta.origem === "CONVITE_ERP" || meta.origem === "CRIADO_ERP"
+            ? "owner"
+            : "guest",
       },
       noStore,
     );

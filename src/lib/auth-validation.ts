@@ -40,3 +40,15 @@ export function validateRegistration(input: Record<string, unknown>) {
     throw new Error("Aceite os termos e a política de privacidade.");
   return { name, email, phone, cpf, password };
 }
+export const OWNER_HOME = "/painel-proprietario";
+const inOwnerArea = (path: string) =>
+  path === OWNER_HOME || /^\/painel-proprietario[/?#]/.test(path);
+/**
+ * Login único: o perfil vem do ERP e decide a área. O destino pedido só vale
+ * dentro da área do próprio perfil; fora dela, cada um vai para a sua página.
+ */
+export function destinationFor(role: "guest" | "owner", next: unknown) {
+  const target = safeNext(typeof next === "string" ? next : null);
+  if (role === "owner") return inOwnerArea(target) ? target : OWNER_HOME;
+  return inOwnerArea(target) ? "/minha-conta" : target;
+}

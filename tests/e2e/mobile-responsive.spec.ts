@@ -13,7 +13,6 @@ const routes = [
   "/politica-de-privacidade",
   "/termos-de-uso",
   "/entrar",
-  "/entrar?role=owner",
   "/cadastro",
   "/recuperar-senha",
   "/definir-senha",
@@ -124,7 +123,6 @@ test("editable fields stay legible on touch devices and focus preserves the view
       "/contato",
       "/proprietarios",
       "/entrar",
-      "/entrar?role=owner",
       "/cadastro",
       "/recuperar-senha",
     ]) {

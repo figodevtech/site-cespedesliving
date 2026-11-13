@@ -1,5 +1,6 @@
 import "server-only";
 import { headers } from "next/headers";
+import type { SiteProfile } from "@/domain/types";
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -41,6 +42,13 @@ export async function erpRequest<T>(
       body.code,
     );
   return body as T;
+}
+/**
+ * Sincroniza e devolve o perfil da conta (cliente ou proprietário). O papel vem
+ * do cadastro no ERP (site_usuario), nunca de algo que o visitante informe.
+ */
+export function syncProfile(token: string) {
+  return erpRequest<SiteProfile>("/site/me/sync", { method: "POST" }, token);
 }
 /**
  * Quem chama o ERP é este servidor, então para o ERP todo visitante teria o mesmo IP e o limite de

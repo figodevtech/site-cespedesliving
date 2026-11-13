@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  destinationFor,
   safeNext,
   validCpf,
   validateRegistration,
@@ -43,5 +44,28 @@ describe("site identity boundaries", () => {
     expect(safeNext("/reservar/studio?checkin=2090-01-01")).toBe(
       "/reservar/studio?checkin=2090-01-01",
     );
+  });
+  it("sends each profile from the single login to its own area", () => {
+    expect(destinationFor("owner", null)).toBe("/painel-proprietario");
+    expect(destinationFor("owner", "/painel-proprietario/extrato")).toBe(
+      "/painel-proprietario/extrato",
+    );
+    expect(destinationFor("owner", "/reservar/studio")).toBe(
+      "/painel-proprietario",
+    );
+    expect(destinationFor("owner", "https://evil.example")).toBe(
+      "/painel-proprietario",
+    );
+    expect(destinationFor("guest", undefined)).toBe("/minha-conta");
+    expect(destinationFor("guest", "/reservar/studio?guests=2")).toBe(
+      "/reservar/studio?guests=2",
+    );
+    expect(destinationFor("guest", "/painel-proprietario")).toBe(
+      "/minha-conta",
+    );
+    expect(destinationFor("guest", "/painel-proprietarios")).toBe(
+      "/painel-proprietarios",
+    );
+    expect(destinationFor("guest", 42)).toBe("/minha-conta");
   });
 });

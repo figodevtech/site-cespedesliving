@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { Header, Footer } from "@/components/shell";
 import { PageTransition } from "@/components/page-transition";
+import { PwaSupport } from "@/components/pwa-support";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 import "@fontsource/dm-sans/latin-400.css";
@@ -26,6 +27,12 @@ export const metadata: Metadata = {
   description:
     "Flats selecionados e gestão de hospedagens em João Pessoa. Conforto para quem chega, cuidado para quem confia.",
   robots: { index: false, follow: false },
+  // App instalado no iPhone (o manifesto cobre Android e desktop).
+  appleWebApp: {
+    capable: true,
+    title: "Cespedes",
+    statusBarStyle: "black",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "16x16 32x32 48x48", type: "image/x-icon" },
@@ -73,6 +80,9 @@ export const metadata: Metadata = {
     ],
   },
 };
+export const viewport: Viewport = {
+  themeColor: "#0a1d28",
+};
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -89,6 +99,7 @@ export default function RootLayout({
         </main>
         <Footer />
         <PageTransition />
+        <PwaSupport />
         <Analytics />
       </body>
     </html>

@@ -20,6 +20,30 @@ for (const size of [16, 32, 48, 180, 192, 512]) {
   await fs.writeFile(path.join(outputDir, name), png);
   if (size <= 48) entries.push({ size, png });
 }
+// PWA "maskable": o Android recorta o ícone em círculo/squircle. O monograma vai
+// até a borda, então fica reduzido dentro da zona segura (80%) sobre o mesmo fundo.
+const background = await sharp(iconSource)
+  .extract({ left: 4, top: 4, width: 1, height: 1 })
+  .raw()
+  .toBuffer();
+for (const size of [192, 512]) {
+  const inner = Math.round(size * 0.66);
+  const art = await sharp(iconSource)
+    .resize(inner, inner, { kernel: "lanczos3" })
+    .png()
+    .toBuffer();
+  await sharp({
+    create: {
+      width: size,
+      height: size,
+      channels: 3,
+      background: { r: background[0], g: background[1], b: background[2] },
+    },
+  })
+    .composite([{ input: art, gravity: "center" }])
+    .png()
+    .toFile(path.join(outputDir, `maskable-${size}.png`));
+}
 // Standard ICO directory containing the three original PNG resolutions.
 const header = Buffer.alloc(6 + 16 * entries.length);
 header.writeUInt16LE(1, 2);

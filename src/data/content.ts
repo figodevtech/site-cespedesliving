@@ -25,7 +25,7 @@ export const faq = [
   ],
   [
     "Como acompanho os resultados do meu imóvel?",
-    "Entre na Área do proprietário com a conta criada pela equipe. Você pode consultar seus imóveis, reservas, receitas, despesas, repasses e demonstrativos. Esse acesso é separado da conta de cliente.",
+    "Entre pelo mesmo acesso do site com a conta criada pela equipe: reconhecemos o perfil e abrimos a Área do proprietário. Lá você consulta seus imóveis, reservas, receitas, despesas, repasses e demonstrativos. A conta de proprietário usa um e-mail diferente de uma conta de cliente.",
   ],
   [
     "Como são contadas as noites?",

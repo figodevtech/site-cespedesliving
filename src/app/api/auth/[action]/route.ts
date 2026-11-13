@@ -1,12 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
-import { apiError, assertSameOrigin, ApiError, erpRequest } from "@/lib/erp";
+import { apiError, assertSameOrigin, ApiError, syncProfile } from "@/lib/erp";
 import { cookies } from "next/headers";
 import {
   SIGNUP_NEXT_COOKIE,
+  destinationFor,
   safeNext,
   validateRegistration,
 } from "@/lib/auth-validation";
-import type { SiteProfile } from "@/domain/types";
 const noStore = { headers: { "Cache-Control": "private, no-store" } };
 /** O Supabase limita os envios de e-mail (1 por minuto por endereço e um teto por hora). */
 function rateLimited(error: { status?: number; code?: string }) {
@@ -129,38 +129,19 @@ export async function POST(
           "E-mail ou senha inválidos, ou e-mail ainda não confirmado.",
           401,
         );
+      // Tela única para cliente e proprietário: o ERP diz quem é a conta e o
+      // site leva cada perfil para a sua área.
       try {
-        if (body.role !== "owner")
-          await erpRequest(
-            "/site/me/sync",
-            { method: "POST" },
-            data.session.access_token,
-          );
-        const profile = await erpRequest<SiteProfile>(
-          "/site/me",
-          undefined,
-          data.session.access_token,
-        );
-        const expectedRole = body.role === "owner" ? "owner" : "guest";
-        if (profile.role !== expectedRole) {
-          await client.auth.signOut();
-          throw new ApiError(
-            "Use o acesso correspondente à sua conta. Contas de cliente e proprietário são separadas.",
-            403,
-          );
-        }
+        const profile = await syncProfile(data.session.access_token);
         return Response.json(
-          {
-            next:
-              profile.role === "owner"
-                ? "/painel-proprietario"
-                : safeNext(body.next ?? null),
-          },
-          { headers: { "Cache-Control": "private, no-store" } },
+          { next: destinationFor(profile.role, body.next) },
+          noStore,
         );
       } catch (error) {
         if (error instanceof ApiError && error.status === 409)
-          return Response.json({ next: "/cadastro-pendente" });
+          return Response.json({ next: "/cadastro-pendente" }, noStore);
+        // Conta da equipe, bloqueada ou ERP fora do ar: não deixa sessão pela metade.
+        await client.auth.signOut();
         throw error;
       }
     }
@@ -187,23 +168,13 @@ export async function POST(
           { headers: { "Cache-Control": "private, no-store" } },
         );
       try {
-        await erpRequest("/site/me/sync", { method: "POST" }, body.accessToken);
-        const profile = await erpRequest<SiteProfile>(
-          "/site/me",
-          undefined,
-          body.accessToken,
-        );
+        const profile = await syncProfile(body.accessToken);
         const store = await cookies();
         const pending = store.get(SIGNUP_NEXT_COOKIE)?.value ?? null;
         store.delete(SIGNUP_NEXT_COOKIE);
         return Response.json(
-          {
-            next:
-              profile.role === "owner"
-                ? "/painel-proprietario"
-                : safeNext(pending),
-          },
-          { headers: { "Cache-Control": "private, no-store" } },
+          { next: destinationFor(profile.role, pending) },
+          noStore,
         );
       } catch {
         return Response.json({ next: "/cadastro-pendente" });
@@ -242,7 +213,7 @@ export async function POST(
       await client.auth.signOut();
       return Response.json({
         next: "/entrar",
-        message: "Senha definida. Entre na área correspondente à sua conta.",
+        message: "Senha definida. Entre com seu e-mail e a nova senha.",
       });
     }
     if (action === "signout") {

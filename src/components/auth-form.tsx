@@ -4,12 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 export function AuthForm({
   mode,
-  role = "guest",
   next = "/minha-conta",
   linkError = false,
 }: {
   mode: "signin" | "signup" | "recovery" | "password";
-  role?: "guest" | "owner";
   next?: string;
   linkError?: boolean;
 }) {
@@ -76,7 +74,6 @@ export function AuthForm({
               body: JSON.stringify({
                 ...Object.fromEntries(fields),
                 acceptedTerms: fields.get("acceptedTerms") === "on",
-                role,
                 next,
               }),
             });
@@ -113,15 +110,12 @@ export function AuthForm({
               ? "Recupere seu acesso"
               : mode === "password"
                 ? "Defina sua senha"
-                : role === "owner"
-                  ? "Acesso do proprietário"
-                  : "Acesso do cliente"}
+                : "Acesse sua conta"}
         </h2>
         {mode === "signin" && (
           <p className="muted">
-            {role === "owner"
-              ? "A conta de proprietário é criada pela equipe e usa um e-mail diferente da conta de cliente."
-              : "Acompanhe suas reservas e mantenha seus dados atualizados."}
+            Clientes e proprietários entram por aqui. Reconhecemos sua conta e
+            levamos você direto para a sua área.
           </p>
         )}
         {mode === "signup" && (
@@ -240,19 +234,10 @@ export function AuthForm({
         </button>
         {mode === "signin" && (
           <>
-            <Link href={`/recuperar-senha?role=${role}`}>
-              Esqueci minha senha
+            <Link href="/recuperar-senha">Esqueci minha senha</Link>
+            <Link href={`/cadastro${nextQuery ? `?${nextQuery}` : ""}`}>
+              Criar conta de cliente
             </Link>
-            {role === "guest" ? (
-              <>
-                <Link href={`/cadastro${nextQuery ? `?${nextQuery}` : ""}`}>
-                  Criar conta de cliente
-                </Link>
-                <Link href="/entrar?role=owner">Sou proprietário</Link>
-              </>
-            ) : (
-              <Link href="/entrar?role=guest">Entrar como cliente</Link>
-            )}
           </>
         )}
         {mode !== "signin" && (

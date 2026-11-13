@@ -22,12 +22,16 @@ test("real integration boundaries: identity, empty catalog and private routes", 
   expect(invalid.status()).toBe(400);
   expect((await invalid.json()).error).toContain("CPF");
   await page.goto("/painel-proprietario");
-  await expect(page).toHaveURL(/\/entrar\?role=owner/);
+  await expect(page).toHaveURL(/\/entrar\?next=%2Fpainel-proprietario$/);
   await expect(
-    page.getByRole("heading", { name: "Acesso do proprietário" }),
+    page.getByRole("heading", { name: "Acesse sua conta" }),
   ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sou proprietário" })).toHaveCount(0);
   await page.goto("/minha-conta");
-  await expect(page).toHaveURL(/\/entrar\?role=guest/);
+  await expect(page).toHaveURL(/\/entrar$/);
+  await expect(
+    page.getByRole("heading", { name: "Acesse sua conta" }),
+  ).toBeVisible();
   expect(
     (await request.post("/api/booking-requests", { data: {} })).status(),
   ).toBe(401);
