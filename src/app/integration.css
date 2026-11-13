@@ -16,6 +16,16 @@
 .search-shell { flex-wrap: wrap; }
 @media(max-width: 700px) { .account-grid { grid-template-columns: 1fr; } .portal-filters { display: grid; grid-template-columns: 1fr; } .dashboard-panel { padding: 20px; } }
 
+/* O Safari amplia campos com texto pequeno ao focar. Esta regra também cobre
+   celulares na horizontal e prevalece sobre os estilos locais dos formulários. */
+@media (any-pointer: coarse), (max-width: 900px) {
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em) !important;
+  }
+}
+
 /* Agenda do imóvel no quadro de reserva */
 .agenda-notes { display: grid; gap: 12px; margin: 18px 0 4px; font-size: 0.74rem; color: #48545c; }
 .agenda-notes h3 { font-family: var(--body); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #58636b; margin: 0 0 7px; }

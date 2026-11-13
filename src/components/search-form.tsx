@@ -98,7 +98,7 @@ export function SearchForm({
           ]}
         />
       </div>
-      <div className={compact ? "field" : "search-field"}>
+      <div className={`${compact ? "field" : "search-field"} destination-field`}>
         <label htmlFor="search-destination">Destino</label>
         <Select
           id="search-destination"

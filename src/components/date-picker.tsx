@@ -156,10 +156,11 @@ export function DatePicker({
       const width = 320,
         height = popover.current?.offsetHeight ?? 380;
       const below = rect.bottom + 8;
-      const top =
+      const preferredTop =
         below + height > window.innerHeight && rect.top - height - 8 > 8
           ? rect.top - height - 8
           : below;
+      const top = Math.max(8, Math.min(preferredTop, window.innerHeight - height - 8));
       const left = Math.min(
         Math.max(8, rect.left),
         window.innerWidth - width - 8,
@@ -543,7 +544,8 @@ export function DateRangePicker({
       const width = mode === "double" ? 640 : 320;
       const height = popover.current?.offsetHeight ?? 420;
       const below = rect.bottom + 8;
-      const top = below + height > window.innerHeight && rect.top - height - 8 > 8 ? rect.top - height - 8 : below;
+      const preferredTop = below + height > window.innerHeight && rect.top - height - 8 > 8 ? rect.top - height - 8 : below;
+      const top = Math.max(8, Math.min(preferredTop, window.innerHeight - height - 8));
       const left = Math.min(Math.max(8, rect.left), window.innerWidth - width - 8);
       setLayout({ top, left, mode });
     };

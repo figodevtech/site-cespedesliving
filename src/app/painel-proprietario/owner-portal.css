@@ -394,6 +394,7 @@
 }
 .op-panel-head {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: flex-end;
   gap: 12px;
@@ -995,6 +996,9 @@
   gap: 22px;
   align-items: start;
 }
+.op-res-detail > * {
+  min-width: 0;
+}
 .op-res-detail-side {
   position: sticky;
   top: 96px;
@@ -1167,6 +1171,9 @@
 
 /* ----------------------------------------------------------------- tabela */
 .op-table-wrap {
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
   border: 1px solid var(--op-line);
   border-radius: 12px;
@@ -1251,7 +1258,7 @@
     grid-column: 1 / -1;
   }
   .op-res-detail {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .op-res-detail-side {
     position: static;
@@ -1283,6 +1290,26 @@
   }
 }
 @media (max-width: 560px) {
+  .op-res-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px 12px;
+  }
+  .op-date-chip {
+    grid-row: 1 / 3;
+    align-self: start;
+  }
+  .op-res-title {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .op-res-amount {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .op-res-status {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
   .op-top {
     padding-top: 24px;
   }

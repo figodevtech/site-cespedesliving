@@ -116,3 +116,26 @@
     padding-bottom: 7px;
   }
 }
+
+/* Em 320px, o texto de 16px precisa da linha inteira para não truncar as opções. */
+@media (max-width: 360px) {
+  .search-shell.is-stay,
+  .hero-bottom .search-shell.is-stay {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .search-shell.is-stay > :nth-child(n) {
+    grid-column: 1;
+  }
+  .search-shell.is-stay > :nth-child(4) {
+    grid-row: 2;
+  }
+  .search-shell.is-stay > :nth-child(2) {
+    grid-row: 3;
+  }
+  .search-shell.is-stay > :nth-child(3) {
+    grid-row: 4;
+  }
+  .search-shell.is-stay > .button {
+    grid-row: 5;
+  }
+}

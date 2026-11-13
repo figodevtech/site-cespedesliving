@@ -200,9 +200,13 @@ export function Select({
                   role="option"
                   aria-selected={option.value === current}
                   className={`select-option ${index === active ? "is-active" : ""} ${option.value === current ? "is-selected" : ""}`}
-                  onPointerMove={() => setActive(index)}
-                  // pointerdown + preventDefault: o foco fica no botão e a escolha não depende do blur.
-                  onPointerDown={(event) => event.preventDefault()}
+                  onPointerMove={(event) => {
+                    if (event.pointerType === "mouse") setActive(index);
+                  }}
+                  // Mantém o foco com mouse sem cancelar o toque e o clique do Safari.
+                  onPointerDown={(event) => {
+                    if (event.pointerType === "mouse") event.preventDefault();
+                  }}
                   onClick={() => choose(index)}
                 >
                   <span>{option.label}</span>

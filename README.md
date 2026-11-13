@@ -34,6 +34,8 @@ Se já houver um servidor de desenvolvimento em 3000, defina `PLAYWRIGHT_PORT=30
 
 Para verificar especificamente os campos de data em Chromium e WebKit, instale também `npx playwright install webkit` e execute `npm run test:dates`. A cobertura e as capturas estão em [`docs/date-fields/`](docs/date-fields/).
 
+A revisão mobile completa pode ser repetida com `npm run test:responsive` após o build. Ela testa Chromium e WebKit na porta 3003. Veja as correções, a cobertura e os limites em [`docs/MOBILE-RESPONSIVENESS.md`](docs/MOBILE-RESPONSIVENESS.md).
+
 ## Atendimento e consultas
 
 **WhatsApp oficial: +55 (83) 99912-3337**, configurado em `src/lib/contact.ts`. Pode ser substituído por `NEXT_PUBLIC_CONTACT_WHATSAPP`, com código do país e apenas dígitos. `.env.example` registra a configuração. `NEXT_PUBLIC_CONTACT_EMAIL` permite configurar um canal alternativo.
