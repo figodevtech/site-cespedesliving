@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import { ArrowUpRight, Bath, BedDouble, CalendarRange, Clock, Landmark, Maximize2, Users, Wallet, Wrench } from "lucide-react";
 import { ownerDashboard, ownerFlats, ownerQuery, ownerStatement } from "@/lib/owner-portal";
 import { addDays, money, today } from "@/domain/dates";
+import { calendarEvents, localMoment, position } from "@/domain/owner-calendar";
 import {
   dayMonth,
-  dayStrip,
   movementDay,
   movementTotals,
   movementType,
@@ -18,6 +18,7 @@ import {
   stayPhase,
 } from "@/domain/owner";
 import { Empty, MovementTable, PageHeading, Panel, Pill, PropertyThumb, ReservationRow, StatCard } from "@/components/owner/owner-ui";
+import { OwnerCalendar } from "@/components/owner/owner-calendar";
 
 export const metadata = { title: "Imóvel" };
 
@@ -39,8 +40,13 @@ export default async function OwnerProperty({ params }: { params: Promise<{ id: 
     .filter((reservation) => ["current", "upcoming"].includes(stayPhase(reservation, day)))
     .sort((a, b) => a.checkin.localeCompare(b.checkin));
   const occupations = (dashboard.ocupacoes ?? []).filter((occupation) => String(occupation.imovel_id) === flat.id);
-  const blocks = occupations.filter((occupation) => ["MANUTENCAO", "BLOQUEIO"].includes(occupation.tipo));
-  const strip = dayStrip(reservations, occupations, 30, day);
+  // O calendário recebe também bloqueios passados; a lista mostra só os vigentes e futuros.
+  const blocks = occupations
+    .filter((occupation) => ["MANUTENCAO", "BLOQUEIO"].includes(occupation.tipo) && (!occupation.fim || occupation.fim > day))
+    .sort((a, b) => a.inicio.localeCompare(b.inicio));
+  const events = calendarEvents(reservations, occupations, flat);
+  const moment = localMoment(new Date().toISOString());
+  const now = moment ? position(moment.day, moment.time) : position(day);
   const received = movementTotals(statement.items, periodRange("12m", day).start, day).received;
   // Repassado em todo o histórico do imóvel, e quando foi o último repasse.
   const payouts = statement.items.filter((item) => movementType(item) === "REPASSE" && Number(item.valor) > 0 && !item.repasse_pendente);
@@ -129,25 +135,8 @@ export default async function OwnerProperty({ params }: { params: Promise<{ id: 
         <StatCard icon={CalendarRange} label="Próximas estadias" value={String(stays.filter((stay) => stayPhase(stay, day) === "upcoming").length)} hint={stays[0] ? `A próxima começa em ${dayMonth(stays[0].checkin)}` : "Nenhuma prevista"} />
       </div>
 
-      <Panel title="Próximos 30 dias" eyebrow="Agenda do imóvel">
-        <div className="op-strip" role="list" aria-label="Situação dos próximos 30 dias">
-          {strip.map(({ day: date, state }) => (
-            <span
-              key={date}
-              role="listitem"
-              className={`op-strip-day op-strip-${state}`}
-              title={`${shortDate(date)}: ${state === "booked" ? "reservado" : state === "blocked" ? "bloqueado" : "livre"}`}
-              aria-label={`${shortDate(date)}: ${state === "booked" ? "reservado" : state === "blocked" ? "bloqueado" : "livre"}`}
-            >
-              <small>{date.slice(8)}</small>
-            </span>
-          ))}
-        </div>
-        <div className="op-legend">
-          <span><i className="op-swatch op-swatch-out" /> Reservado</span>
-          <span><i className="op-swatch op-swatch-block" /> Bloqueado ou manutenção</span>
-          <span><i className="op-swatch op-swatch-free" /> Livre</span>
-        </div>
+      <Panel title="Calendário do imóvel" eyebrow="Agenda do imóvel">
+        <OwnerCalendar events={events} today={day} now={now} />
       </Panel>
 
       <div className="op-grid-2">

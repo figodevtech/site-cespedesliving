@@ -2,9 +2,8 @@ import type {
   Flat,
   OwnerDashboardReservation,
   OwnerMovement,
-  OwnerOccupation,
 } from "./types";
-import { addDays, nightsBetween, today } from "./dates";
+import { nightsBetween, today } from "./dates";
 
 /**
  * Regras da área do proprietário que não dependem de tela: datas, situação das reservas,
@@ -239,34 +238,6 @@ export function occupancyRate(
   if (!capacity) return { rate: 0, nights: 0 };
   const nights = bookedNights(reservations, start, end);
   return { rate: Math.min(100, Math.round((nights / capacity) * 100)), nights };
-}
-
-export type DayState = "free" | "booked" | "blocked";
-
-/** Situação de cada dia de um imóvel, a partir de hoje, para a faixa de calendário. */
-export function dayStrip(
-  reservations: OwnerReservation[],
-  occupations: OwnerOccupation[],
-  days = 30,
-  start = today(),
-) {
-  return Array.from({ length: days }, (_, index) => {
-    const day = addDays(start, index);
-    const booked = reservations.some(
-      (reservation) =>
-        reservation.status !== "CANCELLED" &&
-        reservation.checkin <= day &&
-        day < reservation.checkout,
-    );
-    const blocked = occupations.some(
-      (occupation) =>
-        ["MANUTENCAO", "BLOQUEIO"].includes(occupation.tipo) &&
-        occupation.inicio <= day &&
-        (!occupation.fim || day < occupation.fim),
-    );
-    const state: DayState = booked ? "booked" : blocked ? "blocked" : "free";
-    return { day, state };
-  });
 }
 
 /* ------------------------------------------------------------------ períodos */

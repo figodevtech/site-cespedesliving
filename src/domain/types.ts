@@ -123,6 +123,12 @@ export type OwnerDashboardReservation = {
   createdAt?: string | null;
   /** Titular da reserva (sem documento). Ausente em ERPs anteriores a este campo. */
   guest?: OwnerReservationGuest | null;
+  /** Horário previsto de entrada e saída da reserva ("HH:MM"). */
+  checkinTime?: string | null;
+  checkoutTime?: string | null;
+  /** Entrada e saída registradas no ERP (data e hora, ISO). */
+  checkedInAt?: string | null;
+  checkedOutAt?: string | null;
 };
 export type OwnerReservationGuest = {
   name: string | null;

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Flat, OwnerMovement } from "@/domain/types";
 import {
-  dayStrip,
   monthlySeries,
   movementDay,
   movementEffect,
@@ -104,10 +103,6 @@ describe("ocupação e agenda", () => {
     expect(occupancyRate(rows, "2026-11-01", "2026-11-11", 0).rate).toBe(0);
   });
 
-  it("marca dias reservados e bloqueados na faixa de calendário", () => {
-    const strip = dayStrip(rows, [{ id: 1, imovel_id: 7, tipo: "MANUTENCAO", inicio: "2026-11-03", fim: "2026-11-04" }], 4, "2026-11-01");
-    expect(strip.map((item) => item.state)).toEqual(["booked", "booked", "blocked", "free"]);
-  });
 
   it("calcula o início de cada período", () => {
     expect(periodRange("mes", "2026-11-09").start).toBe("2026-11-01");
