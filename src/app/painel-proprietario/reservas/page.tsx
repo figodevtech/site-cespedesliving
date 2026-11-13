@@ -1,9 +1,10 @@
-import Link from "next/link";
 import { ownerDashboard, ownerFlats, ownerQuery } from "@/lib/owner-portal";
 import { money, today } from "@/domain/dates";
 import { monthLong, normalizeReservations, plural, stayPhase, type OwnerReservation, type StayPhase } from "@/domain/owner";
 import { Select } from "@/components/select";
 import { Empty, PageHeading, ReservationRow } from "@/components/owner/owner-ui";
+import { FilterPending, FilterScope, FilterTabs } from "@/components/owner/filter-tabs";
+import { ReservationListSkeleton } from "@/components/owner/owner-skeletons";
 
 export const metadata = { title: "Reservas" };
 
@@ -45,7 +46,7 @@ export default async function OwnerReservations({
   const active = list.filter((reservation) => reservation.status !== "CANCELLED");
 
   return (
-    <>
+    <FilterScope>
       <PageHeading
         title="Reservas"
         description={`${plural(list.length, "reserva", "reservas")} · ${money(active.reduce((sum, reservation) => sum + reservation.amount, 0))} em estadias (sem as canceladas).`}
@@ -69,15 +70,13 @@ export default async function OwnerReservations({
         ) : null}
       </PageHeading>
 
-      <nav className="op-tabs" aria-label="Situação das reservas">
-        {TABS.map((item) => (
-          <Link key={item.key} href={hrefFor(item.key)} aria-current={item.key === tab.key ? "page" : undefined} scroll={false}>
-            {item.label}
-            <span className="op-tab-count">{count(item.phase)}</span>
-          </Link>
-        ))}
-      </nav>
+      <FilterTabs
+        className="op-tabs"
+        label="Situação das reservas"
+        tabs={TABS.map((item) => ({ href: hrefFor(item.key), label: item.label, active: item.key === tab.key, count: count(item.phase) }))}
+      />
 
+      <FilterPending fallback={<ReservationListSkeleton />}>
       {groups.length ? (
         <div className="op-month-groups">
           {groups.map((group) => (
@@ -97,6 +96,7 @@ export default async function OwnerReservations({
       ) : (
         <Empty>Nenhuma reserva nesta situação{flatId ? " para o imóvel escolhido" : ""}.</Empty>
       )}
-    </>
+      </FilterPending>
+    </FilterScope>
   );
 }

@@ -30,7 +30,7 @@ describe("calendário do imóvel", () => {
   it("divide o dia de troca entre a saída e a entrada, na mesma linha", () => {
     const events = calendarEvents(
       [
-        booking({ id: "a", checkin: "2026-08-02", checkout: "2026-08-05", checkinTime: "15:00", checkoutTime: "11:00", guest: { name: "Maria Souza", phone: null, email: null, city: null, state: null } }),
+        booking({ id: "a", checkin: "2026-08-02", checkout: "2026-08-05", checkinTime: "15:00", checkoutTime: "11:00", guest: { name: "Maria Souza", city: null, state: null } }),
         booking({ id: "b", checkin: "2026-08-05", checkout: "2026-08-09", checkinTime: "14:00", checkoutTime: "11:00" }),
       ],
       [],

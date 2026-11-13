@@ -130,10 +130,9 @@ export type OwnerDashboardReservation = {
   checkedInAt?: string | null;
   checkedOutAt?: string | null;
 };
+/** Titular visto pelo proprietário: sem documento, telefone ou e-mail. */
 export type OwnerReservationGuest = {
   name: string | null;
-  phone: string | null;
-  email: string | null;
   city: string | null;
   state: string | null;
 };

@@ -7,6 +7,8 @@ import { Select } from "@/components/select";
 import { DateRangePicker } from "@/components/date-picker";
 import { StatementExport } from "@/components/owner/statement-export";
 import { Empty, MovementTable, PageHeading, Panel, StatCard } from "@/components/owner/owner-ui";
+import { FilterPending, FilterScope, FilterTabs } from "@/components/owner/filter-tabs";
+import { TableSkeleton } from "@/components/owner/owner-skeletons";
 
 export const metadata = { title: "Extrato" };
 
@@ -88,21 +90,23 @@ export default async function OwnerStatementPage({
       </div>
 
       <Panel title="Movimentações" eyebrow={plural(items.length, "lançamento", "lançamentos")}>
-        <nav className="op-tabs op-tabs-sm" aria-label="Tipo de movimentação">
-          <Link href={hrefFor()} aria-current={!type ? "page" : undefined} scroll={false}>
-            Todos
-          </Link>
-          {TYPES.map((value) => (
-            <Link key={value} href={hrefFor(value)} aria-current={type === value ? "page" : undefined} scroll={false}>
-              {movementLabel[value]}
-            </Link>
-          ))}
-        </nav>
-        {items.length ? (
-          <MovementTable items={items} showProperty={!filters.imovelId} caption="Movimentações do extrato" />
-        ) : (
-          <Empty>Nenhum lançamento com esses filtros. Os valores são atualizados pelos registros financeiros da equipe.</Empty>
-        )}
+        <FilterScope>
+          <FilterTabs
+            className="op-tabs op-tabs-sm"
+            label="Tipo de movimentação"
+            tabs={[
+              { href: hrefFor(), label: "Todos", active: !type },
+              ...TYPES.map((value) => ({ href: hrefFor(value), label: movementLabel[value], active: type === value })),
+            ]}
+          />
+          <FilterPending fallback={<TableSkeleton rows={8} />}>
+            {items.length ? (
+              <MovementTable items={items} showProperty={!filters.imovelId} caption="Movimentações do extrato" />
+            ) : (
+              <Empty>Nenhum lançamento com esses filtros. Os valores são atualizados pelos registros financeiros da equipe.</Empty>
+            )}
+          </FilterPending>
+        </FilterScope>
       </Panel>
     </>
   );

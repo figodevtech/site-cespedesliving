@@ -18,6 +18,8 @@ import {
   type PeriodPreset,
 } from "@/domain/owner";
 import { Empty, MovementTable, PageHeading, Panel, Pill, PropertyThumb, ReservationRow, StatCard } from "@/components/owner/owner-ui";
+import { FilterPending, FilterScope, FilterTabs } from "@/components/owner/filter-tabs";
+import { OverviewSummarySkeleton } from "@/components/owner/owner-skeletons";
 
 export default async function OwnerOverview({
   searchParams,
@@ -64,25 +66,24 @@ export default async function OwnerOverview({
     : undefined;
 
   return (
-    <>
+    <FilterScope>
       <PageHeading
         title="Visão geral"
         description="O desempenho dos seus imóveis e o que a Cespedes tem a repassar para você."
       >
-        <nav className="op-segment" aria-label="Período">
-          {(Object.keys(periodPresets) as PeriodPreset[]).map((key) => (
-            <Link
-              key={key}
-              href={key === "12m" ? "/painel-proprietario" : `/painel-proprietario?periodo=${key}`}
-              aria-current={key === preset ? "true" : undefined}
-              scroll={false}
-            >
-              {periodPresets[key]}
-            </Link>
-          ))}
-        </nav>
+        <FilterTabs
+          className="op-segment"
+          label="Período"
+          current="true"
+          tabs={(Object.keys(periodPresets) as PeriodPreset[]).map((key) => ({
+            href: key === "12m" ? "/painel-proprietario" : `/painel-proprietario?periodo=${key}`,
+            label: periodPresets[key],
+            active: key === preset,
+          }))}
+        />
       </PageHeading>
 
+      <FilterPending fallback={<OverviewSummarySkeleton />}>
       <div className="op-stats">
         <StatCard
           tone="hero"
@@ -159,6 +160,7 @@ export default async function OwnerOverview({
           )}
         </Panel>
       </div>
+      </FilterPending>
 
       <div className="op-grid-2">
         <Panel title="Agenda" eyebrow="Hóspedes e chegadas" action={{ href: "/painel-proprietario/reservas", label: "Todas as reservas" }}>
@@ -230,6 +232,6 @@ export default async function OwnerOverview({
           <Empty>Nenhuma movimentação ainda. Os valores aparecem aqui assim que a equipe registra recebimentos e repasses.</Empty>
         )}
       </Panel>
-    </>
+    </FilterScope>
   );
 }

@@ -3,10 +3,18 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 const FADE_IN_MS = 420;
 const STUCK_MS = 6000;
+const OWNER_AREA = "/painel-proprietario";
+/**
+ * Dentro da área do proprietário a navegação é instantânea, com esqueletos
+ * (loading.tsx): esmaecer a página inteira, abas incluídas, só atrasaria a resposta.
+ */
+const inOwnerArea = (path: string) =>
+  path === OWNER_AREA || path.startsWith(`${OWNER_AREA}/`);
 // Esmaece o <main> ao clicar num link interno e o revela quando a nova rota entra.
 export function PageTransition() {
   const pathname = usePathname();
   const first = useRef(true);
+  const previous = useRef(pathname);
   useEffect(() => {
     const root = document.documentElement;
     let stuck: number | undefined;
@@ -25,6 +33,7 @@ export function PageTransition() {
       const url = new URL(link.href, location.href);
       if (url.origin !== location.origin || url.pathname === location.pathname)
         return;
+      if (inOwnerArea(location.pathname) && inOwnerArea(url.pathname)) return;
       root.dataset.pageTransition = "out";
       window.clearTimeout(stuck);
       // Se a navegação for cancelada, não deixa a página apagada.
@@ -40,10 +49,13 @@ export function PageTransition() {
     };
   }, []);
   useEffect(() => {
+    const from = previous.current;
+    previous.current = pathname;
     if (first.current) {
       first.current = false;
       return;
     }
+    if (inOwnerArea(from) && inOwnerArea(pathname)) return;
     const root = document.documentElement;
     root.dataset.pageTransition = "in";
     const done = window.setTimeout(() => {

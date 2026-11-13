@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CalendarClock, ChevronRight, Info, LogIn, LogOut, Mail, MapPin, Moon, Phone, Users, XCircle } from "lucide-react";
+import { CalendarClock, ChevronRight, Info, LogIn, LogOut, MapPin, Moon, Users, XCircle } from "lucide-react";
 import { ownerDashboard, ownerFlats, ownerStatement } from "@/lib/owner-portal";
 import { money, today } from "@/domain/dates";
 import {
@@ -15,19 +15,6 @@ import {
 import { BookingPills, Empty, MovementTable, PageHeading, Panel, Pill, PropertyThumb } from "@/components/owner/owner-ui";
 
 export const metadata = { title: "Reserva" };
-
-/** "83999998888" → "(83) 99999-8888", com os dígitos para o link; sem DDD, mostra como veio. */
-function phoneOf(value?: string | null) {
-  const digits = String(value ?? "").replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
-  if (!digits) return null;
-  const label =
-    digits.length === 11 ? `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
-    : digits.length === 10 ? `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
-    : String(value).trim();
-  // Com DDD (10 ou 11 dígitos), o link leva o +55; fora disso, disca os dígitos como vieram.
-  const href = `tel:${digits.length === 10 || digits.length === 11 ? `+55${digits}` : digits}`;
-  return { href, label };
-}
 
 export default async function OwnerReservation({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -49,7 +36,6 @@ export default async function OwnerReservation({ params }: { params: Promise<{ i
   const pending = (cents(net) - cents(paidPayouts)) / 100;
   const paid = reservation.amount > 0 ? Math.min(100, Math.max(0, Math.round((totals.received / reservation.amount) * 100))) : 0;
   const guest = reservation.guest;
-  const guestPhone = phoneOf(guest?.phone);
   const guestPlace = [guest?.city, guest?.state].filter(Boolean).join(" - ");
   const cancelled = reservation.status === "CANCELLED";
   const done = (date: string) => !cancelled && (reservation.status === "COMPLETED" || (Boolean(date) && date <= day));
@@ -129,28 +115,15 @@ export default async function OwnerReservation({ params }: { params: Promise<{ i
 
           {guest?.name ? (
             <Panel title={guest.name} eyebrow="Hóspede titular">
-              {guestPhone || guest.email || guestPlace ? (
-                <ul className="op-specs op-specs-lg" aria-label="Contato do hóspede">
-                  {guestPhone ? (
-                    <li>
-                      <Phone size={15} aria-hidden="true" />
-                      <a className="op-link" href={guestPhone.href}>{guestPhone.label}</a>
-                    </li>
-                  ) : null}
-                  {guest.email ? (
-                    <li>
-                      <Mail size={15} aria-hidden="true" />
-                      <a className="op-link" href={`mailto:${guest.email}`}>{guest.email}</a>
-                    </li>
-                  ) : null}
-                  {guestPlace ? (
-                    <li>
-                      <MapPin size={15} aria-hidden="true" /> {guestPlace}
-                    </li>
-                  ) : null}
+              {/* Telefone e e-mail do hóspede ficam só com a equipe; o proprietário vê nome e cidade. */}
+              {guestPlace ? (
+                <ul className="op-specs op-specs-lg" aria-label="Origem do hóspede">
+                  <li>
+                    <MapPin size={15} aria-hidden="true" /> {guestPlace}
+                  </li>
                 </ul>
               ) : (
-                <Empty>Sem contato cadastrado para este hóspede.</Empty>
+                <Empty>Cidade de origem não informada.</Empty>
               )}
             </Panel>
           ) : null}

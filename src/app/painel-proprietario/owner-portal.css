@@ -86,6 +86,29 @@
 .op-nav-item[aria-current="page"] svg {
   color: var(--op-gold-dark);
 }
+/* Aba clicada enquanto a página carrega: barra dourada correndo na base da aba. */
+.op-nav-item.is-loading {
+  position: relative;
+  overflow: hidden;
+  flex: none;
+}
+.op-nav-progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 40%;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--op-gold);
+  animation: op-nav-progress 0.9s ease-in-out infinite;
+}
+@keyframes op-nav-progress {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .op-nav-progress { animation: none; width: 100%; opacity: 0.6; }
+}
 .op-body {
   padding-top: 30px;
 }
@@ -236,6 +259,43 @@
 .op-tabs-sm a {
   padding: 7px 13px;
   font-size: 0.74rem;
+}
+/* Abas de filtro: rolam de lado no celular, sem barra de rolagem visível. */
+.op-segment,
+.op-tabs {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.op-segment::-webkit-scrollbar,
+.op-tabs::-webkit-scrollbar {
+  display: none;
+}
+/* Filtro clicado enquanto os dados chegam: mesma barra dourada das abas do painel. */
+/* flex: none: com overflow hidden a aba poderia encolher dentro da lista rolável. */
+.op-segment a,
+.op-tabs a {
+  flex: none;
+}
+.op-segment a.is-loading,
+.op-tabs a.is-loading {
+  position: relative;
+  overflow: hidden;
+}
+.op-segment a.is-loading::after,
+.op-tabs a.is-loading::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 40%;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--op-gold);
+  animation: op-nav-progress 0.9s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .op-segment a.is-loading::after,
+  .op-tabs a.is-loading::after { animation: none; width: 100%; opacity: 0.6; }
 }
 .op-inline-filter {
   display: flex;
@@ -1520,4 +1580,106 @@ a.op-cal-bar:focus-visible { outline: 2px solid var(--op-gold); outline-offset: 
   .op-cal-day { padding: 4px 3px; }
   .op-cal-day small { display: none; }
   .op-cal-bar { padding: 0 5px; font-size: 0.62rem; }
+}
+
+/* ------------------------------------------------------- esqueletos (loading) */
+.op-skel {
+  display: block;
+  flex: none;
+  max-width: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #ecebe6 0%, #f6f5f1 45%, #ecebe6 90%) 0 0 / 220% 100%;
+  animation: op-skel-shine 1.4s ease-in-out infinite;
+}
+@keyframes op-skel-shine {
+  from { background-position: 120% 0; }
+  to { background-position: -120% 0; }
+}
+.op-skel-hero .op-skel {
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.24) 45%, rgba(255, 255, 255, 0.12) 90%);
+}
+.op-skel-page { animation: op-skel-appear 160ms ease-out both; }
+@keyframes op-skel-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.op-skel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+}
+.op-skel-grow { flex: 1; }
+.op-skel-split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.op-skel-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--op-line);
+  border-radius: 12px;
+  background: var(--op-card);
+}
+.op-skel-media { aspect-ratio: 16 / 10; }
+.op-skel-card { overflow: hidden; pointer-events: none; }
+.op-skel-chart {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: end;
+  gap: 14px;
+  height: 180px;
+}
+.op-skel-donut {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.op-skel-table { display: grid; }
+.op-skel-table-head,
+.op-skel-table-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--op-line);
+}
+.op-skel-table-row:last-child { border-bottom: 0; }
+.op-skel-filters {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) minmax(240px, 1.2fr) auto;
+  gap: 14px;
+  align-items: end;
+}
+.op-skel-cal {
+  display: grid;
+  gap: 14px;
+}
+.op-skel-cal-grid {
+  border: 1px solid var(--op-line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.op-skel-cal-week {
+  height: 64px;
+  padding: 34px 0 0;
+  border-top: 1px solid var(--op-line);
+  background-image: repeating-linear-gradient(90deg, transparent 0, transparent calc(100% / 7 - 1px), var(--op-line) calc(100% / 7 - 1px), var(--op-line) calc(100% / 7));
+}
+.op-skel-cal-week:first-child { border-top: 0; }
+@media (max-width: 700px) {
+  .op-skel-hide-sm { display: none; }
+  .op-skel-filters { grid-template-columns: 1fr; }
+  .op-skel-donut { flex-direction: column; align-items: stretch; }
+  .op-skel-donut > .op-skel { align-self: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .op-skel,
+  .op-skel-page { animation: none; }
 }
