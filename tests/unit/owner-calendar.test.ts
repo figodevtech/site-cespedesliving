@@ -3,8 +3,11 @@ import type { OwnerDashboardReservation } from "@/domain/types";
 import { normalizeReservations } from "@/domain/owner";
 import {
   calendarEvents,
+  conflictsIn,
+  daysInclusive,
   localMoment,
   monthWeeks,
+  ownUseProblem,
   position,
   shiftMonth,
   weekSegments,
@@ -93,7 +96,8 @@ describe("calendário do imóvel", () => {
       [
         { id: 1, imovel_id: 7, tipo: "MANUTENCAO", inicio: "2026-08-03", fim: "2026-08-05", motivo: "Pintura" },
         { id: 2, imovel_id: 7, tipo: "BLOQUEIO", inicio: "2026-08-07", fim: null },
-        { id: 3, imovel_id: 7, tipo: "RESERVA", inicio: "2026-08-01", fim: "2026-08-02" },
+        // Ocupação de uma reserva que está na lista (aqui, a cancelada): não vira "Ocupado".
+        { id: 3, imovel_id: 7, tipo: "RESERVA", inicio: "2026-08-02", fim: "2026-08-04", reserva_id: "c" },
       ],
     );
     expect(events.map((event) => event.label)).toEqual(["Manutenção - Pintura", "Bloqueio"]);
@@ -118,5 +122,82 @@ describe("calendário do imóvel", () => {
     const { segments, lanes } = weekSegments(events, week);
     expect(lanes).toBe(2);
     expect(segments.map((segment) => segment.lane)).toEqual([0, 1, 0]);
+  });
+  it("marca o uso próprio do proprietário (editável) e separa dos bloqueios da equipe", () => {
+    const events = calendarEvents(
+      [],
+      [
+        { id: 7, imovel_id: 7, tipo: "BLOQUEIO", inicio: "2026-08-10", fim: "2026-08-13", motivo: "Reserva de uso próprio do proprietário", uso_proprio: true },
+        { id: 8, imovel_id: 7, tipo: "BLOQUEIO", inicio: "2026-08-20", fim: "2026-08-21", motivo: "Pintura", uso_proprio: false },
+        { id: 9, imovel_id: 7, tipo: "MANUTENCAO", inicio: "2026-08-25", fim: "2026-08-26", uso_proprio: true },
+      ],
+    );
+    expect(events.map((event) => [event.label, event.tone, event.ownUseId])).toEqual([
+      ["Uso próprio", "own", "7"],
+      ["Bloqueio - Pintura", "block", null],
+      ["Manutenção", "block", null],
+    ]);
+    expect(events[0].days).toEqual({ from: "2026-08-10", to: "2026-08-13" });
+    expect(daysInclusive("2026-08-10", "2026-08-12")).toBe(3);
+  });
+
+  it("confere conflitos do uso próprio como o banco: o dia de saída da reserva fica livre", () => {
+    const events = calendarEvents(
+      [booking({ id: "r", checkin: "2026-08-05", checkout: "2026-08-08" })],
+      [{ id: 7, imovel_id: 7, tipo: "BLOQUEIO", inicio: "2026-08-12", fim: "2026-08-14", uso_proprio: true }],
+    );
+    const today = "2026-08-01";
+    // Começar no dia da saída (8) e terminar na véspera do uso próprio (11): livre.
+    expect(ownUseProblem(events, "2026-08-08", "2026-08-11", today)).toBeNull();
+    expect(ownUseProblem(events, "2026-08-07", "2026-08-09", today)).toContain("reserva #r");
+    expect(ownUseProblem(events, "2026-08-11", "2026-08-12", today)).toContain("uso próprio");
+    // Ao alterar as datas de um uso próprio, ele mesmo não conta como conflito.
+    expect(ownUseProblem(events, "2026-08-11", "2026-08-13", today, "7")).toBeNull();
+    expect(conflictsIn(events, "2026-08-04", "2026-08-04")).toHaveLength(0);
+    expect(ownUseProblem(events, "2026-07-31", "2026-08-02", today)).toBe("Escolha datas a partir de hoje.");
+    expect(ownUseProblem(events, "2026-09-01", "2027-03-01", today)).toBe("Escolha no máximo 180 dias por vez.");
+  });
+  it("mostra como Ocupado o que o banco bloqueia mas não é reserva do proprietário (caso da #83)", () => {
+    const events = calendarEvents(
+      [booking({ id: "82", checkin: "2026-11-20", checkout: "2026-11-21" })],
+      [
+        { id: 49, imovel_id: 13, tipo: "RESERVA", inicio: "2026-11-20", fim: "2026-11-21", reserva_id: 82 },
+        { id: 50, imovel_id: 13, tipo: "RESERVA", inicio: "2026-11-27", fim: "2026-11-29", reserva_id: 83 },
+        { id: 51, imovel_id: 13, tipo: "LOCACAO", inicio: "2027-01-01", fim: null },
+      ],
+      { checkinTime: "14:00", checkoutTime: "11:00" },
+    );
+    // A #82 aparece uma vez só (como reserva); a #83 e a locação, sem detalhes.
+    expect(events.map((event) => [event.kind, event.label])).toEqual([
+      ["reservation", "#82 - Confirmada"],
+      ["occupied", "Ocupado"],
+      ["occupied", "Locação"],
+    ]);
+    expect(events[1]).toMatchObject({ startTime: "14:00", endTime: "11:00", days: { from: "2026-11-27", to: "2026-11-29" } });
+    expect(ownUseProblem(events, "2026-11-27", "2026-11-30", "2026-11-13")).toBe(
+      "O período escolhido já tem uma ocupação registrada pela equipe.",
+    );
+    expect(ownUseProblem(events, "2026-11-29", "2026-11-30", "2026-11-13")).toBeNull();
+    expect(ownUseProblem(events, "2027-02-01", "2027-02-02", "2026-11-13")).toBe("O período escolhido já tem uma locação.");
+  });
+  it("mantém a faixa nos dias da reserva quando o check-in/out foi registrado em outro dia (caso da #83)", () => {
+    const [event] = calendarEvents(
+      [
+        booking({
+          id: "83",
+          status: "COMPLETED",
+          checkin: "2026-11-27",
+          checkout: "2026-11-29",
+          checkinTime: "14:00",
+          checkoutTime: "11:00",
+          checkedInAt: "2026-11-12T19:40:00Z", // registrados em 12/11, antes da data
+          checkedOutAt: "2026-11-12T19:45:00Z",
+        }),
+      ],
+      [],
+    );
+    expect(event).toMatchObject({ startDay: "2026-11-27", startTime: "14:00", endDay: "2026-11-29", endTime: "11:00", checkedIn: false, checkedOut: false });
+    expect(event.start).toBeCloseTo(position("2026-11-27", "14:00"));
+    expect(event.end).toBeCloseTo(position("2026-11-29", "11:00"));
   });
 });

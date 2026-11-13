@@ -45,6 +45,7 @@ export const config = {
     "/api/auth/:path*",
     "/api/account/:path*",
     "/api/owner-files/:path*",
+    "/api/owner-blocks/:path*",
     "/api/booking-requests",
   ],
 };

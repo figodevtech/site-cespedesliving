@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowUpRight, Bath, BedDouble, CalendarRange, Clock, Landmark, Maximize2, Users, Wallet, Wrench } from "lucide-react";
+import { ArrowUpRight, Bath, BedDouble, CalendarRange, Clock, Home, Landmark, Maximize2, Users, Wallet, Wrench } from "lucide-react";
 import { ownerDashboard, ownerFlats, ownerQuery, ownerStatement } from "@/lib/owner-portal";
 import { addDays, money, today } from "@/domain/dates";
 import { calendarEvents, localMoment, position } from "@/domain/owner-calendar";
@@ -136,7 +136,7 @@ export default async function OwnerProperty({ params }: { params: Promise<{ id: 
       </div>
 
       <Panel title="Calendário do imóvel" eyebrow="Agenda do imóvel">
-        <OwnerCalendar events={events} today={day} now={now} />
+        <OwnerCalendar events={events} today={day} now={now} propertyId={flat.id} />
       </Panel>
 
       <div className="op-grid-2">
@@ -151,26 +151,30 @@ export default async function OwnerProperty({ params }: { params: Promise<{ id: 
             <Empty>Nenhuma hospedagem em andamento ou prevista.</Empty>
           )}
         </Panel>
-        <Panel title="Bloqueios e manutenções" eyebrow="Disponibilidade">
+        <Panel title="Uso próprio e bloqueios" eyebrow="Disponibilidade">
           {blocks.length ? (
             <ul className="op-blocks">
-              {blocks.map((block) => (
-                <li key={block.id}>
-                  <span className="op-block-icon">
-                    <Wrench size={15} aria-hidden="true" />
-                  </span>
-                  <span>
-                    <b>{block.motivo || (block.tipo === "MANUTENCAO" ? "Manutenção" : "Bloqueio")}</b>
-                    <small>
-                      {shortDate(block.inicio)} {block.fim ? `até ${shortDate(block.fim)}` : "· sem data para terminar"}
-                    </small>
-                  </span>
-                  <Pill tone="warning">{block.tipo === "MANUTENCAO" ? "Manutenção" : "Bloqueio"}</Pill>
-                </li>
-              ))}
+              {blocks.map((block) => {
+                const label = block.uso_proprio ? "Uso próprio" : block.tipo === "MANUTENCAO" ? "Manutenção" : "Bloqueio";
+                return (
+                  <li key={block.id}>
+                    <span className="op-block-icon">
+                      {block.uso_proprio ? <Home size={15} aria-hidden="true" /> : <Wrench size={15} aria-hidden="true" />}
+                    </span>
+                    <span>
+                      <b>{block.uso_proprio ? "Reserva de uso próprio" : block.motivo || label}</b>
+                      <small>
+                        {/* "fim" é o dia seguinte ao último (exclusivo), como no ERP. */}
+                        {shortDate(block.inicio)} {block.fim ? `até ${shortDate(addDays(block.fim, -1))}` : "· sem data para terminar"}
+                      </small>
+                    </span>
+                    <Pill tone={block.uso_proprio ? "info" : "warning"}>{label}</Pill>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
-            <Empty>Nenhum bloqueio ou manutenção ativa.</Empty>
+            <Empty>Nenhum uso próprio, bloqueio ou manutenção previstos. Para usar o imóvel, escolha os dias no calendário acima.</Empty>
           )}
         </Panel>
       </div>

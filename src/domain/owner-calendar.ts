@@ -18,11 +18,15 @@ export const DEFAULT_CHECKOUT = "12:00";
 /** Fim de bloqueio sem data (ano ~29000): número finito, serializável para o cliente. */
 const OPEN_END = 1e7;
 
-export type CalendarTone = "info" | "success" | "warning" | "neutral" | "block";
+export type CalendarTone = "info" | "success" | "warning" | "neutral" | "block" | "own" | "busy";
 
 export type CalendarEvent = {
   id: string;
-  kind: "reservation" | "block";
+  /**
+   * occupied: ocupação que o banco considera (locação, ou reserva que não está na lista
+   * do proprietário) e que só aparece como "Ocupado", sem detalhes de terceiros.
+   */
+  kind: "reservation" | "block" | "occupied";
   /** Início e fim em dias desde 1970 (fração = hora do dia). */
   start: number;
   end: number;
@@ -40,6 +44,13 @@ export type CalendarEvent = {
   /** Entrada/saída já registradas no ERP (horário real, não o previsto). */
   checkedIn: boolean;
   checkedOut: boolean;
+  /**
+   * Dias que o evento ocupa na agenda, como o banco conta: do primeiro dia (incluso) ao dia
+   * final (exclusivo: dia de saída da reserva). Nulo no fim: bloqueio sem data para acabar.
+   */
+  days: { from: string; to: string | null };
+  /** Reserva de uso próprio deste proprietário: id do bloqueio no ERP, para alterar/excluir. */
+  ownUseId: string | null;
 };
 
 export type CalendarSegment = {
@@ -95,8 +106,10 @@ export const reservationTone: Record<string, CalendarTone> = {
 
 /**
  * Reservas (exceto canceladas) e bloqueios do imóvel como eventos do calendário.
- * Horário: o registrado no ERP quando houver; senão o previsto da reserva; senão o do
- * imóvel; senão o padrão.
+ * Os dias vêm sempre da reserva (são eles que o banco bloqueia). A hora: a registrada no ERP
+ * quando cai no próprio dia previsto (check-in antecipado, check-out tardio); senão a prevista
+ * da reserva; senão a do imóvel; senão o padrão. Um registro em outro dia (ex.: check-in e
+ * check-out lançados antes da data) não arrasta a faixa para fora do período reservado.
  */
 export function calendarEvents(
   reservations: OwnerReservation[],
@@ -108,11 +121,13 @@ export function calendarEvents(
   const baseOut = validTime(defaults.checkoutTime, DEFAULT_CHECKOUT);
   for (const reservation of reservations) {
     if (reservation.status === "CANCELLED" || !reservation.checkin || !reservation.checkout) continue;
-    const actualIn = reservation.checkedInAt ? localMoment(reservation.checkedInAt) : null;
-    const actualOut = reservation.checkedOutAt ? localMoment(reservation.checkedOutAt) : null;
-    const startDay = actualIn?.day ?? reservation.checkin;
+    const registeredIn = reservation.checkedInAt ? localMoment(reservation.checkedInAt) : null;
+    const registeredOut = reservation.checkedOutAt ? localMoment(reservation.checkedOutAt) : null;
+    const actualIn = registeredIn?.day === reservation.checkin ? registeredIn : null;
+    const actualOut = registeredOut?.day === reservation.checkout ? registeredOut : null;
+    const startDay = reservation.checkin;
     const startTime = actualIn?.time ?? validTime(reservation.checkinTime, baseIn);
-    const endDay = actualOut?.day ?? reservation.checkout;
+    const endDay = reservation.checkout;
     const endTime = actualOut?.time ?? validTime(reservation.checkoutTime, baseOut);
     let start: number;
     let end: number;
@@ -138,9 +153,48 @@ export function calendarEvents(
       tone: reservationTone[reservation.status] ?? "neutral",
       checkedIn: Boolean(actualIn),
       checkedOut: Boolean(actualOut),
+      days: { from: reservation.checkin, to: reservation.checkout },
+      ownUseId: null,
     });
   }
+  // O calendário mostra tudo o que o banco considera ocupado. A reserva do proprietário já
+  // virou faixa acima; o resto (locação, reserva de outro beneficiário) vira "Ocupado".
+  const listed = new Set(reservations.map((reservation) => String(reservation.id)));
   for (const occupation of occupations) {
+    if (occupation.tipo === "RESERVA" || occupation.tipo === "LOCACAO") {
+      // Sem reserva_id: ERP anterior a este campo (no banco ele é obrigatório para RESERVA).
+      // Sem como saber de quem é, não desenha, para não duplicar as reservas do proprietário.
+      if (occupation.tipo === "RESERVA" && (occupation.reserva_id == null || listed.has(String(occupation.reserva_id)))) continue;
+      let start: number;
+      let end: number;
+      try {
+        start = position(occupation.inicio, baseIn);
+        end = occupation.fim ? position(occupation.fim, baseOut) : OPEN_END;
+      } catch {
+        continue;
+      }
+      if (!(end > start)) continue;
+      const lease = occupation.tipo === "LOCACAO";
+      events.push({
+        id: `occ-${occupation.id}`,
+        kind: "occupied",
+        start,
+        end,
+        startDay: occupation.inicio,
+        startTime: baseIn,
+        endDay: occupation.fim,
+        endTime: baseOut,
+        label: lease ? "Locação" : "Ocupado",
+        guest: null,
+        status: occupation.tipo,
+        tone: "busy",
+        checkedIn: false,
+        checkedOut: false,
+        days: { from: occupation.inicio, to: occupation.fim },
+        ownUseId: null,
+      });
+      continue;
+    }
     if (!["MANUTENCAO", "BLOQUEIO"].includes(occupation.tipo)) continue;
     let start: number;
     let end: number;
@@ -154,6 +208,8 @@ export function calendarEvents(
     if (!(end > start)) continue;
     const kindLabel = occupation.tipo === "MANUTENCAO" ? "Manutenção" : "Bloqueio";
     const reason = occupation.motivo?.trim();
+    // Para o proprietário, o bloqueio que ele mesmo criou é a "reserva de uso próprio".
+    const ownUse = occupation.tipo === "BLOQUEIO" && occupation.uso_proprio === true;
     events.push({
       id: `block-${occupation.id}`,
       kind: "block",
@@ -163,15 +219,65 @@ export function calendarEvents(
       startTime: "00:00",
       endDay: occupation.fim ? addDays(occupation.fim, -1) : null,
       endTime: "23:59",
-      label: reason ? `${kindLabel} - ${reason}` : kindLabel,
+      label: ownUse ? "Uso próprio" : reason ? `${kindLabel} - ${reason}` : kindLabel,
       guest: null,
-      status: occupation.tipo,
-      tone: "block",
+      status: ownUse ? "USO_PROPRIO" : occupation.tipo,
+      tone: ownUse ? "own" : "block",
       checkedIn: false,
       checkedOut: false,
+      days: { from: occupation.inicio, to: occupation.fim },
+      ownUseId: ownUse ? String(occupation.id) : null,
     });
   }
   return events.sort((a, b) => a.start - b.start || a.end - b.end);
+}
+
+/* ---------------------------------------------- seleção de dias (uso próprio) */
+
+/** Limites da reserva de uso próprio (os mesmos que o ERP confere). */
+export const OWN_USE_MAX_DAYS = 180;
+export const OWN_USE_MAX_AHEAD_DAYS = 730;
+
+/** Dias entre o primeiro e o último (inclusive). */
+export function daysInclusive(first: string, last: string) {
+  return Math.round((parseDate(last) - parseDate(first)) / DAY_MS) + 1;
+}
+
+/**
+ * Eventos que ocupam algum dia de [first, last]. Mesma regra do banco: o dia de saída de uma
+ * reserva fica livre (outra estadia ou o uso próprio pode começar nele).
+ */
+export function conflictsIn(events: CalendarEvent[], first: string, last: string, ignoreOwnUseId?: string | null) {
+  return events.filter(
+    (event) =>
+      // Ao alterar as datas de um uso próprio, ele mesmo não conta como conflito.
+      !(ignoreOwnUseId && event.ownUseId === ignoreOwnUseId) &&
+      event.days.from <= last &&
+      (event.days.to === null || event.days.to > first),
+  );
+}
+
+/** Motivo para não poder reservar o período, ou null se pode. */
+export function ownUseProblem(events: CalendarEvent[], first: string, last: string, today: string, ignoreOwnUseId?: string | null) {
+  if (first < today) return "Escolha datas a partir de hoje.";
+  if (first > addDays(today, OWN_USE_MAX_AHEAD_DAYS)) return "A reserva de uso próprio pode ser feita com até 2 anos de antecedência.";
+  if (daysInclusive(first, last) > OWN_USE_MAX_DAYS) return `Escolha no máximo ${OWN_USE_MAX_DAYS} dias por vez.`;
+  const conflicts = conflictsIn(events, first, last, ignoreOwnUseId);
+  if (conflicts.length)
+    return `O período escolhido já tem ${conflicts
+      .map((event) =>
+        event.kind === "reservation"
+          ? `a reserva #${event.id}`
+          : event.kind === "occupied"
+            ? event.status === "LOCACAO"
+              ? "uma locação"
+              : "uma ocupação registrada pela equipe"
+            : event.ownUseId
+              ? "uso próprio"
+              : event.label.toLowerCase(),
+      )
+      .join(", ")}.`;
+  return null;
 }
 
 /** Semanas (domingo a sábado) que cobrem o mês "AAAA-MM". */

@@ -1449,6 +1449,8 @@
   border-radius: 12px;
   overflow: hidden;
   background: var(--op-card);
+  /* A altura das semanas acompanha a largura do calendário (unidade cqw). */
+  container-type: inline-size;
 }
 .op-cal-weekdays {
   display: grid;
@@ -1467,6 +1469,9 @@
 .op-cal-week {
   position: relative;
   min-height: calc(var(--cal-head) + var(--lanes) * var(--cal-lane) + 10px);
+  /* Dia perto de quadrado: altura de ~75% da largura de cada dia, até 132px (telas largas).
+     No celular a conta dá menos que o espaço das faixas, e vale o mínimo acima. */
+  min-height: max(calc(var(--cal-head) + var(--lanes) * var(--cal-lane) + 10px), min(calc(100cqw / 7 * 0.75), 132px));
   border-top: 1px solid var(--op-line);
 }
 .op-cal-week:first-of-type { border-top: 0; }
@@ -1665,9 +1670,12 @@ a.op-cal-bar:focus-visible { outline: 2px solid var(--op-gold); outline-offset: 
   border: 1px solid var(--op-line);
   border-radius: 12px;
   overflow: hidden;
+  container-type: inline-size;
 }
 .op-skel-cal-week {
   height: 64px;
+  /* Mesma proporção das semanas do calendário real, para não pular ao carregar. */
+  height: max(64px, min(calc(100cqw / 7 * 0.75), 132px));
   padding: 34px 0 0;
   border-top: 1px solid var(--op-line);
   background-image: repeating-linear-gradient(90deg, transparent 0, transparent calc(100% / 7 - 1px), var(--op-line) calc(100% / 7 - 1px), var(--op-line) calc(100% / 7));
@@ -1683,3 +1691,104 @@ a.op-cal-bar:focus-visible { outline: 2px solid var(--op-gold); outline-offset: 
   .op-skel,
   .op-skel-page { animation: none; }
 }
+
+/* ------------------------------------------- calendário: reserva de uso próprio */
+.op .op-button-danger {
+  background: #b3362a;
+  border-color: #b3362a;
+}
+.op .op-button-danger:hover { background: #962a20; }
+.op-cal-own { background: #6b5b95; }
+/* Dia livre como botão: o toque escolhe o primeiro e o último dia. */
+button.op-cal-day {
+  border: 0;
+  border-left: 1px solid var(--op-line);
+  margin: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: inherit;
+  transition: background 0.15s;
+}
+button.op-cal-day:first-child { border-left: 0; }
+button.op-cal-day:hover:not(:disabled) { background: #f6f2e8; }
+button.op-cal-day:focus-visible { outline: 2px solid var(--op-gold); outline-offset: -2px; }
+button.op-cal-day:disabled { cursor: progress; }
+.op-cal-day.is-selected { background: rgba(107, 91, 149, 0.13); }
+button.op-cal-day.is-selected:hover:not(:disabled) { background: rgba(107, 91, 149, 0.2); }
+.op-cal-day.is-start,
+.op-cal-day.is-end { background: rgba(107, 91, 149, 0.24); }
+.op-cal-day.is-start b,
+.op-cal-day.is-end b { background: #6b5b95; color: #fff; }
+.op-cal-day.is-selected.is-invalid { background: rgba(179, 54, 42, 0.12); }
+.op-cal-day.is-invalid.is-start b,
+.op-cal-day.is-invalid.is-end b { background: #b3362a; }
+/* Uso próprio é um botão (abre alterar/excluir). */
+button.op-cal-bar {
+  width: calc(100% - 2px);
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+button.op-cal-bar.cont-before,
+button.op-cal-bar.cont-after { width: calc(100% - 1px); }
+button.op-cal-bar:hover { filter: brightness(1.1); }
+button.op-cal-bar:focus-visible { outline: 2px solid var(--op-gold); outline-offset: 1px; }
+.op-cal-bar.is-editing { opacity: 0.35; }
+.op-cal-bar.is-focused { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #6b5b95; }
+.op-cal-grid.is-working { opacity: 0.7; transition: opacity 0.2s; }
+.op-cal-actions { margin-bottom: 12px; }
+.op-cal-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(107, 91, 149, 0.35);
+  border-radius: 12px;
+  background: #f7f5fb;
+}
+.op-cal-action.has-problem {
+  border-color: rgba(179, 54, 42, 0.35);
+  background: #fdf4f2;
+}
+.op-cal-action-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 0.82rem;
+  color: var(--op-ink);
+}
+.op-cal-action-text b { color: var(--op-navy); }
+.op-cal-action-text small { font-size: 0.74rem; color: var(--op-muted); }
+.op-cal-action-text small.op-cal-problem { color: #9a3a2c; }
+.op-cal-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.op-cal-hint,
+.op-cal-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+}
+.op-cal-hint { color: var(--op-muted); background: var(--op-bg); }
+.op-cal-msg-ok { color: #2a6a49; background: #e8f3ec; }
+.op-cal-msg-error { color: #9a3a2c; background: #fbecea; margin-top: 8px; }
+.op-cal-actions > .op-cal-msg-error:first-child { margin-top: 0; }
+@media (max-width: 640px) {
+  .op-cal-action-buttons { width: 100%; }
+  .op-cal-action-buttons .op-button { flex: 1; }
+}
+/* Ocupação sem detalhes para o proprietário (locação ou reserva de outro beneficiário). */
+.op-cal-busy { background: #4a5660; }

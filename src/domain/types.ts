@@ -144,6 +144,10 @@ export type OwnerOccupation = {
   inicio: string;
   fim: string | null;
   motivo?: string | null;
+  /** Ocupação de tipo RESERVA: a reserva que a gerou (pode não estar na lista do proprietário). */
+  reserva_id?: number | string | null;
+  /** Reserva de uso próprio criada por este proprietário no site (ele pode alterar e excluir). */
+  uso_proprio?: boolean;
 };
 export type OwnerDashboard = {
   occupancy: number;
