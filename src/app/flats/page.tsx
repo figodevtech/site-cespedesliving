@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getAmenityOptions, getDestinations, getFlatsPage } from "@/services/flats";
+import { getAmenityOptions, getDestinations, getFlatsPage, getStayRules } from "@/services/flats";
 import { parseDestination } from "@/domain/destinations";
 import { PageHero, EmptyState } from "@/components/ui";
 import { FlatCard } from "@/components/flat-card";
@@ -27,6 +27,8 @@ export default async function FlatsPage({
   // Em paralelo com a busca dos imóveis; nunca rejeita (sem opções, o filtro some).
   const amenityOptions = getAmenityOptions();
   const destinationOptions = getDestinations();
+  // Também nunca rejeita: sem resposta do ERP, vale 1 noite e a cotação decide.
+  const { minNights } = await getStayRules();
   const destination = parseDestination(params.destination);
   let error = "";
   let flats: Flat[] = [];
@@ -43,7 +45,7 @@ export default async function FlatsPage({
       throw new Error("Informe uma quantidade válida de hóspedes.");
     if (modality === "TEMPORADA" && (params.checkin || params.checkout))
       validateStay(params.checkin, params.checkout, guests, 100, undefined, {
-        minNights: 1,
+        minNights,
         maxNights: 730,
       });
     const minPrice = params.minPrice ? Number(params.minPrice) : undefined;
@@ -119,6 +121,7 @@ export default async function FlatsPage({
             showPrices={!isMock()}
             amenities={await amenityOptions}
             destinations={await destinationOptions}
+            minNights={minNights}
           />
           <div className="catalog-bar">
             <div className="chips">

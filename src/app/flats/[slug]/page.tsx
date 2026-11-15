@@ -6,7 +6,6 @@ import {
   Users,
   BedDouble,
   Bath,
-  Ruler,
   Check,
   ArrowRight,
 } from "lucide-react";
@@ -33,7 +32,6 @@ export async function generateMetadata({
     `até ${flat.maxGuests} hóspedes`,
     plural(flat.bedrooms, "quarto"),
     plural(flat.bathrooms, "banheiro"),
-    `${flat.areaSqm} m²`,
   ].join(" · ");
   const description = `${facts}. ${flat.description} Comodidades: ${flat.amenities.slice(0, 5).join(", ")}.`;
   const url = `/flats/${flat.slug}`;
@@ -111,10 +109,6 @@ export default async function FlatDetail({
             <span>
               <Bath size={19} />
               {flat.bathrooms} banheiro{flat.bathrooms > 1 ? "s" : ""}
-            </span>
-            <span>
-              <Ruler size={19} />
-              {flat.areaSqm} m²
             </span>
           </div>
           <section className="detail-section">

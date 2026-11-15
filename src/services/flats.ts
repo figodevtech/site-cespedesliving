@@ -72,6 +72,20 @@ export async function getDestinations(): Promise<Destination[]> {
     return [];
   }
 }
+/**
+ * Regra geral de temporada do ERP: o mínimo de noites que vale para todos os imóveis (cada
+ * anúncio já traz o seu em minNights). Sem resposta do ERP, a busca segue com 1 noite e a
+ * cotação continua sendo quem decide.
+ */
+export async function getStayRules(): Promise<{ minNights: number }> {
+  if (isMock()) return { minNights: 1 };
+  try {
+    const rules = await erpRequest<{ min_noites: number }>("/public/regras-reserva");
+    return { minNights: Math.max(1, Math.floor(Number(rules.min_noites)) || 1) };
+  } catch {
+    return { minNights: 1 };
+  }
+}
 /** Períodos sem vaga e pacotes fechados do imóvel; falha na busca só esconde o aviso. */
 export async function getFlatAgenda(flatId: string): Promise<FlatAgenda | null> {
   if (isMock()) return { unavailable: [], packages: [] };

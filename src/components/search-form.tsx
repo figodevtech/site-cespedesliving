@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Search } from "lucide-react";
-import { today, validateStay } from "@/domain/dates";
+import { nightsBetween, today, validateStay } from "@/domain/dates";
 import type { Modality } from "@/domain/types";
 import { amenityKey, type AmenityOption } from "@/domain/amenities";
 import { pricesVisibleFor } from "@/domain/property";
@@ -23,6 +23,7 @@ export function SearchForm({
   showPrices = false,
   amenities = [],
   destinations = [],
+  minNights = 1,
 }: {
   compact?: boolean;
   initial?: Record<string, string>;
@@ -31,6 +32,8 @@ export function SearchForm({
   amenities?: AmenityOption[];
   /** Cidades com imóvel publicado (ERP): as únicas oferecidas em "Destino". */
   destinations?: Destination[];
+  /** Mínimo de noites geral do ERP: o calendário não fecha períodos mais curtos. */
+  minNights?: number;
 }) {
   const router = useRouter();
   // Link antigo ou digitado ("wi-fi") marca a opção equivalente; sem equivalente, a opção é mantida.
@@ -75,7 +78,7 @@ export function SearchForm({
               Number(fd.get("guests") ?? 1),
               100,
               undefined,
-              { minNights: 1, maxNights: 730 },
+              { minNights, maxNights: 730 },
             );
           setError("");
           router.push(`/flats?${params}`);
@@ -122,6 +125,11 @@ export function SearchForm({
             min={today()}
             placeholder="Quando chega e quando sai?"
             value={{ start: stay.checkin, end: stay.checkout }}
+            isEndDisabled={
+              minNights > 1
+                ? (start, day) => nightsBetween(start, day) < minNights
+                : undefined
+            }
             onChange={({ start, end }) => setStay({ checkin: start, checkout: end })}
           />
         </div>

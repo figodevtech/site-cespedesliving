@@ -5,7 +5,7 @@ import {
   ShieldCheck,
   Check,
 } from "lucide-react";
-import { getDestinations, getFlats } from "@/services/flats";
+import { getDestinations, getFlats, getStayRules } from "@/services/flats";
 import { FlatCard } from "@/components/flat-card";
 import { ButtonLink, Photo } from "@/components/ui";
 import { SearchForm } from "@/components/search-form";
@@ -13,7 +13,12 @@ import { isMock } from "@/services/adapter";
 // Catálogo do ERP a cada visita (nada fica congelado no build).
 export const dynamic = "force-dynamic";
 export default async function Home() {
-  const flats = await getFlats();
+  // A busca da home usa as mesmas regras do catálogo; destinos e regras nunca rejeitam.
+  const [flats, destinations, stayRules] = await Promise.all([
+    getFlats(),
+    getDestinations(),
+    getStayRules(),
+  ]);
   return (
     <>
       <section className="hero">
@@ -49,7 +54,10 @@ export default async function Home() {
         </div>
         <div className="hero-bottom">
           <div className="container">
-            <SearchForm destinations={await getDestinations()} />
+            <SearchForm
+              destinations={destinations}
+              minNights={stayRules.minNights}
+            />
           </div>
         </div>
       </section>

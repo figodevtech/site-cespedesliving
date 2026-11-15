@@ -89,10 +89,12 @@ export function FlatCard({
             <BedDouble size={15} />
             {flat.bedrooms} quarto{flat.bedrooms > 1 ? "s" : ""}
           </span>
-          <span>
-            <Wifi size={15} />
-            {hasWifi(flat.amenities) ? "Wi-Fi" : `${flat.areaSqm} m²`}
-          </span>
+          {hasWifi(flat.amenities) && (
+            <span>
+              <Wifi size={15} />
+              Wi-Fi
+            </span>
+          )}
         </div>
         <div className="card-footer">
           {showPrices ? (

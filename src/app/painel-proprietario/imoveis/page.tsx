@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BedDouble, Bath, ChevronRight, Globe, Maximize2, Users } from "lucide-react";
+import { BedDouble, Bath, ChevronRight, Globe, Users } from "lucide-react";
 import { ownerDashboard, ownerFlats, ownerStatement } from "@/lib/owner-portal";
 import { addDays, money, today } from "@/domain/dates";
 import {
@@ -66,7 +66,6 @@ export default async function OwnerProperties() {
                     <li><Users size={13} aria-hidden="true" /> {flat.maxGuests}</li>
                     <li><BedDouble size={13} aria-hidden="true" /> {flat.bedrooms}</li>
                     <li><Bath size={13} aria-hidden="true" /> {flat.bathrooms}</li>
-                    {flat.areaSqm ? <li><Maximize2 size={13} aria-hidden="true" /> {flat.areaSqm} m²</li> : null}
                   </ul>
                   <dl className="op-flat-stats">
                     <div>

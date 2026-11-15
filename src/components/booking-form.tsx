@@ -7,6 +7,7 @@ import type { Booking, Flat, FlatAgenda, ReservationQuote } from "@/domain/types
 import {
   formatDate,
   money,
+  nightsBetween,
   today,
   validateStay,
 } from "@/domain/dates";
@@ -46,6 +47,8 @@ export function BookingForm({
   const [loading, setLoading] = useState(hasDates);
   const [sending, setSending] = useState(false);
   const [quoteRevision, setQuoteRevision] = useState(0);
+  // Mínimo do anúncio (o geral do ERP ou o do imóvel, o maior); mínimos de tarifa chegam pela cotação.
+  const minNights = Math.max(1, flat.minNights ?? 1);
   const loginHref = `/entrar?next=${encodeURIComponent(`/reservar/${flat.slug}?${new URLSearchParams({ ...dates, guests: String(dates.guests) })}`)}`;
   useEffect(() => {
     const controller = new AbortController();
@@ -65,7 +68,7 @@ export function BookingForm({
           dates.guests,
           flat.maxGuests,
           today(),
-          { minNights: flat.minNights ?? 1, maxNights: flat.maxNights ?? 60 },
+          { minNights, maxNights: flat.maxNights ?? 60 },
         );
         const response = await fetch("/api/quote", {
           method: "POST",
@@ -96,7 +99,7 @@ export function BookingForm({
     dates,
     flat.id,
     flat.maxGuests,
-    flat.minNights,
+    minNights,
     flat.maxNights,
     quoteRevision,
   ]);
@@ -106,6 +109,8 @@ export function BookingForm({
     taken.some((range) => range.start <= day && day < range.end);
   const crossesTaken = (from: string, to: string) =>
     taken.some((range) => range.start < to && range.end > from);
+  const endDisabled = (from: string, to: string) =>
+    crossesTaken(from, to) || nightsBetween(from, to) < minNights;
   const packageMark = (day: string) => {
     const pack = agenda?.packages.find(
       (p) => p.start <= day && day < p.end,
@@ -148,7 +153,7 @@ export function BookingForm({
             dates.guests,
             flat.maxGuests,
             today(),
-            { minNights: flat.minNights ?? 1, maxNights: flat.maxNights ?? 60 },
+            { minNights, maxNights: flat.maxNights ?? 60 },
           );
           if (!checkout) {
             router.push(
@@ -214,7 +219,7 @@ export function BookingForm({
             required
             value={{ start: dates.checkin, end: dates.checkout }}
             isStartDisabled={nightTaken}
-            isEndDisabled={crossesTaken}
+            isEndDisabled={endDisabled}
             markOf={packageMark}
             legend={legend}
             onChange={({ start, end }) => {
@@ -222,6 +227,9 @@ export function BookingForm({
               changeDate("checkout", end);
             }}
           />
+          {minNights > 1 ? (
+            <p className="hint">Estadia mínima de {minNights} noites.</p>
+          ) : null}
         </div>
         <div className="field span-2">
           <label htmlFor="booking-guests">Hóspedes</label>

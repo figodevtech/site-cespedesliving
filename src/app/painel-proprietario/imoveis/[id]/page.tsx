@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowUpRight, Bath, BedDouble, CalendarRange, Clock, Home, Landmark, Maximize2, Users, Wallet, Wrench } from "lucide-react";
+import { ArrowUpRight, Bath, BedDouble, CalendarRange, Clock, Home, Landmark, Users, Wallet, Wrench } from "lucide-react";
 import { ownerDashboard, ownerFlats, ownerQuery, ownerStatement } from "@/lib/owner-portal";
 import { addDays, money, today } from "@/domain/dates";
 import { calendarEvents, localMoment, position } from "@/domain/owner-calendar";
@@ -77,7 +77,6 @@ export default async function OwnerProperty({ params }: { params: Promise<{ id: 
             <li><Users size={15} aria-hidden="true" /> {plural(flat.maxGuests, "hóspede", "hóspedes")}</li>
             <li><BedDouble size={15} aria-hidden="true" /> {plural(flat.bedrooms, "quarto", "quartos")}</li>
             <li><Bath size={15} aria-hidden="true" /> {plural(flat.bathrooms, "banheiro", "banheiros")}</li>
-            {flat.areaSqm ? <li><Maximize2 size={15} aria-hidden="true" /> {flat.areaSqm} m²</li> : null}
           </ul>
           <dl className="op-facts">
             {flat.modalities?.length ? (

@@ -35,6 +35,13 @@ describe("calendar dates", () => {
     ])
       expect(() => validateStay(checkin, checkout, 2, 2, current)).toThrow();
   });
+  it("enforces the minimum stay with a clear message", () => {
+    const bounds = { minNights: 2, maxNights: 60 };
+    expect(() =>
+      validateStay("2028-01-02", "2028-01-03", 2, 2, current, bounds),
+    ).toThrow("A estadia mínima é de 2 noites.");
+    expect(validateStay("2028-01-02", "2028-01-04", 2, 2, current, bounds)).toBe(2);
+  });
   it.each([0, -1, 3, 1.5, NaN])("rejects invalid capacity %s", (guests) => {
     expect(() =>
       validateStay("2028-01-02", "2028-01-03", guests, 2, current),

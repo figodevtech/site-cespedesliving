@@ -36,7 +36,10 @@ export function validateStay(
   if (checkin < currentDay)
     throw new Error("A entrada não pode ser no passado.");
   if (nights < 1) throw new Error("A saída precisa ser posterior à entrada.");
-  if (nights < bounds.minNights || nights > bounds.maxNights)
+  // Só barra com mínimo de 2 ou mais: a saída já é posterior à entrada (ao menos 1 noite).
+  if (nights < bounds.minNights)
+    throw new Error(`A estadia mínima é de ${bounds.minNights} noites.`);
+  if (nights > bounds.maxNights)
     throw new Error(
       `Escolha de ${bounds.minNights} a ${bounds.maxNights} noites para este imóvel.`,
     );
