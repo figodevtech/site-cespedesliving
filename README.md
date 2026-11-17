@@ -41,6 +41,7 @@ A revisão mobile completa pode ser repetida com `npm run test:responsive` após
 **WhatsApp oficial: +55 (83) 99912-3337**, configurado em `src/lib/contact.ts`. Pode ser substituído por `NEXT_PUBLIC_CONTACT_WHATSAPP`, com código do país e apenas dígitos. `.env.example` registra a configuração. `NEXT_PUBLIC_CONTACT_EMAIL` permite configurar um canal alternativo.
 
 - A reserva de temporada consulta disponibilidade e preços no ERP e confirma com a conta de cliente autenticada.
+- Confirmada a reserva, o servidor envia ao cliente um e-mail de confirmação pelo Resend (`src/services/booking-confirmation.ts`), depois da resposta, sem atrasar a tela. Exige `RESEND_API_KEY` e `EMAIL_FROM` com remetente de domínio verificado; sem elas, ou se o Resend falhar, a reserva continua valendo e o motivo fica no log. Reenviar o mesmo formulário não duplica o e-mail.
 - O formulário de parceria registra o interesse no ERP e permite continuar no WhatsApp. O formulário de contato prepara a mensagem para esse canal.
 - Depois de preparar, o visitante clica em **Continuar no WhatsApp** e envia a mensagem naquele aplicativo.
 - Preparar uma mensagem não significa enviá-la. Testes automatizados não enviam mensagens nem emails reais.
