@@ -38,7 +38,7 @@ A revisão mobile completa pode ser repetida com `npm run test:responsive` após
 
 ## Atendimento e consultas
 
-**WhatsApp oficial: +55 (83) 99912-3337**, configurado em `src/lib/contact.ts`. Pode ser substituído por `NEXT_PUBLIC_CONTACT_WHATSAPP`, com código do país e apenas dígitos. `.env.example` registra a configuração. `NEXT_PUBLIC_CONTACT_EMAIL` permite configurar um canal alternativo.
+**WhatsApp oficial: (83) 9 9803-3322**, configurado em `src/lib/contact.ts`. Pode ser substituído por `NEXT_PUBLIC_CONTACT_WHATSAPP`, com código do país e apenas dígitos; o número exibido no site e no e-mail de reserva sai do mesmo valor do link. `.env.example` registra a configuração. `NEXT_PUBLIC_CONTACT_EMAIL` permite configurar um canal alternativo.
 
 - A reserva de temporada consulta disponibilidade e preços no ERP e confirma com a conta de cliente autenticada.
 - Confirmada a reserva, o servidor envia ao cliente um e-mail de confirmação pelo Resend (`src/services/booking-confirmation.ts`), depois da resposta, sem atrasar a tela. Exige `RESEND_API_KEY` e `EMAIL_FROM` com remetente de domínio verificado; sem elas, ou se o Resend falhar, a reserva continua valendo e o motivo fica no log. Reenviar o mesmo formulário não duplica o e-mail.

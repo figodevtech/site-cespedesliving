@@ -32,7 +32,7 @@ test("search and stay inquiry prepare the official WhatsApp message", async ({
     .getByRole("link", { name: "Continuar no WhatsApp", exact: true })
     .getAttribute("href");
   const url = new URL(href!);
-  expect(url.origin + url.pathname).toBe("https://wa.me/5583999123337");
+  expect(url.origin + url.pathname).toBe("https://wa.me/5583998033322");
   expect(url.searchParams.get("text")).toContain("Flat Tambaú Master");
   expect(url.searchParams.get("text")).toContain(checkin);
   expect(url.searchParams.get("text")).toContain("Hóspedes: 2");
@@ -125,7 +125,7 @@ test("owner and contact forms prepare messages instead of claiming delivery", as
     .getByRole("link", { name: "Continuar no WhatsApp", exact: true })
     .getAttribute("href");
   let url = new URL(href!);
-  expect(url.pathname).toBe("/5583999123337");
+  expect(url.pathname).toBe("/5583998033322");
   expect(url.searchParams.get("text")).toContain("Região: Manaíra");
   await expect(page.getByRole("status")).toContainText("para enviá-la");
   await page.goto("/contato");

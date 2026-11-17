@@ -52,7 +52,10 @@ describe("conteúdo do e-mail de confirmação", () => {
     expect(email.text).toContain("3 noites · 2 hóspedes");
     expect(email.text).toMatch(/Total: R\$\s1\.250,50/);
     expect(email.text).toContain("/reserva-confirmada?id=123");
-    expect(email.text).toContain("https://wa.me/");
+    expect(email.text).toContain(
+      "WhatsApp (83) 9 9803-3322: https://wa.me/5583998033322",
+    );
+    expect(email.html).toContain("(83) 9 9803-3322");
   });
 
   it("sem os horários do anúncio, mostra só as datas", () => {

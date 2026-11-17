@@ -34,7 +34,7 @@ Marca horizontal no cabeçalho, completa no rodapé e monograma nos favicons. Bu
 | Fluxo | Evidência |
 |---|---|
 | Busca e consulta de hospedagem | Bairro e período são preservados; mensagem contém flat, datas e hóspedes |
-| WhatsApp oficial | Links apontam para `https://wa.me/5583999123337`; os testes inspecionam destino e texto, sem enviar mensagens |
+| WhatsApp oficial | Links apontam para `https://wa.me/5583998033322`; os testes inspecionam destino e texto, sem enviar mensagens |
 | Formulários | Contato e parceria preparam o conteúdo para continuar no WhatsApp; não informam envio automático ou confirmação |
 | Favoritos e galeria | Persistência, exclusão de dados locais, setas, Escape e restauração do foco aprovados |
 | Tarifas e calendário | Cards mostram tarifa sob consulta; calendário artificial não bloqueia a busca pública |
